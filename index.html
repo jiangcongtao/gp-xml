@@ -496,6 +496,7 @@
         .help-tooltip.visible {
             opacity: 1;
             transform: translateY(0);
+            pointer-events: auto;
         }
 
         .help-tooltip::before {
@@ -1349,6 +1350,22 @@
 
     // --- Tooltip Functions ---
     let tooltipTimeout = null;
+    let isMouseInTooltip = false;
+    
+    // Add tooltip mouse event listeners
+    helpTooltip.addEventListener('mouseenter', () => {
+        isMouseInTooltip = true;
+        // Cancel any pending hide
+        if (tooltipTimeout) {
+            clearTimeout(tooltipTimeout);
+            tooltipTimeout = null;
+        }
+    });
+    
+    helpTooltip.addEventListener('mouseleave', () => {
+        isMouseInTooltip = false;
+        hideTooltip();
+    });
     
     function showTooltip(element, helpContent, nodePath, errors) {
         if (!helpContent && (!errors || errors.length === 0)) return;
@@ -1472,10 +1489,16 @@
     }
     
     function hideTooltip() {
+        // Don't hide if mouse is inside tooltip
+        if (isMouseInTooltip) return;
+        
         tooltipTimeout = setTimeout(() => {
-            helpTooltip.classList.remove('visible');
-            helpTooltip.classList.remove('above');
-        }, 100);
+            // Double check mouse isn't in tooltip before hiding
+            if (!isMouseInTooltip) {
+                helpTooltip.classList.remove('visible');
+                helpTooltip.classList.remove('above');
+            }
+        }, 150);
     }
 
     // --- Tree Rendering ---
