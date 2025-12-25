@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern XML Browser</title>
+    <!-- Monaco Editor (VS Code 的编辑器) -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -684,6 +686,254 @@
                 display: none;
             }
         }
+
+        /* ==================== */
+        /* View Tabs Styles     */
+        /* ==================== */
+        .view-tabs {
+            display: flex;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .view-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            margin-bottom: -1px;
+        }
+
+        .view-tab:hover {
+            color: var(--primary-color);
+            background-color: var(--hover-color);
+        }
+
+        .view-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background-color: transparent;
+        }
+
+        .tab-icon {
+            font-size: 1rem;
+        }
+
+        /* View Container */
+        .view-container {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .view-container.active {
+            display: flex;
+        }
+
+        /* Tree View Container (inherits existing main flex layout) */
+        #tree-view-container {
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ==================== */
+        /* XML View Styles      */
+        /* ==================== */
+        #xml-view-container {
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .xml-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .xml-toolbar-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #6b7280;
+            transition: all 0.15s;
+        }
+
+        .xml-toolbar-btn:hover {
+            background-color: var(--hover-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .xml-toolbar-btn .btn-icon {
+            font-size: 0.75rem;
+        }
+
+        .xml-info {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .xml-content {
+            flex: 1;
+            overflow: hidden;
+            margin: 0 1rem;
+            background: #1e1e1e;
+            padding: 1rem 1.5rem;
+            position: relative;
+        }
+
+        .xml-content pre {
+            padding: 1.5rem;
+            font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            min-height: 100%;
+            background: transparent !important;
+        }
+
+        .xml-content code {
+            font-family: inherit;
+            background: transparent !important;
+        }
+
+        /* CodeMirror 6 Styling */
+        .cm-editor {
+            height: 100%;
+            font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
+            font-size: 0.875rem;
+        }
+
+        .cm-scroller {
+            overflow: auto;
+        }
+
+        .cm-content {
+            padding: 1rem 0;
+        }
+
+        .cm-line {
+            padding: 0 0.5rem;
+        }
+
+        /* XML Folding */
+        .xml-fold-wrapper {
+            position: relative;
+        }
+
+        .xml-fold-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            background: #4b5563;
+            color: #e5e7eb;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-family: monospace;
+            line-height: 1;
+            vertical-align: middle;
+            transition: all 0.15s;
+        }
+
+        .xml-fold-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .xml-fold-content {
+            display: inline;
+        }
+
+        .xml-fold-content.collapsed {
+            display: none;
+        }
+
+        .xml-fold-placeholder {
+            display: none;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .xml-fold-content.collapsed + .xml-fold-placeholder {
+            display: inline;
+        }
+
+        /* XML Empty State */
+        .xml-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            text-align: center;
+            background: #f9fafb;
+        }
+
+        .xml-empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive for View Tabs */
+        @media (max-width: 768px) {
+            .view-tabs {
+                padding: 0 1rem;
+            }
+            
+            .view-tab {
+                padding: 0.75rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .view-tab span:not(.tab-icon) {
+                display: none;
+            }
+            
+            #tree-view-container {
+                flex-direction: column;
+            }
+            
+            .xml-toolbar {
+                padding: 0.5rem 1rem;
+                flex-wrap: wrap;
+            }
+            
+            .xml-content pre {
+                padding: 1rem;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -703,10 +953,24 @@
     </div>
 </header>
 
+<!-- View Tabs -->
+<div class="view-tabs">
+    <button class="view-tab active" data-view="tree">
+        <span class="tab-icon">🌲</span>
+        <span>Tree View</span>
+    </button>
+    <button class="view-tab" data-view="xml">
+        <span class="tab-icon">📄</span>
+        <span>XML View</span>
+    </button>
+</div>
+
 <!-- Help Tooltip Element (also shows validation errors) -->
 <div id="help-tooltip" class="help-tooltip"></div>
 
 <main>
+    <!-- Tree View Container -->
+    <div id="tree-view-container" class="view-container active">
     <div id="tree-panel">
         <!-- Tree Controls (hidden by default) -->
         <div class="tree-controls" id="tree-controls">
@@ -790,9 +1054,51 @@
             </div>
         </div>
     </div>
+    </div>
+    <!-- End Tree View Container -->
+    
+    <!-- XML View Container -->
+    <div id="xml-view-container" class="view-container">
+        <div class="xml-toolbar">
+            <button class="xml-toolbar-btn" id="xml-fold-all">
+                <span class="btn-icon">▼</span>
+                <span>折叠全部</span>
+            </button>
+            <button class="xml-toolbar-btn" id="xml-unfold-all">
+                <span class="btn-icon">▶</span>
+                <span>展开全部</span>
+            </button>
+            <span class="xml-info" id="xml-info"></span>
+        </div>
+        <div class="xml-content" id="xml-content">
+            <div class="xml-empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p>加载 XML 文件后在此查看原始内容</p>
+            </div>
+        </div>
+    </div>
+    <!-- End XML View Container -->
 </main>
-
 <script>
+    // Monaco Editor 初始化
+    window.monacoEditor = null;
+    window.monacoReady = false;
+    
+    // 配置 Monaco 加载路径
+    require.config({ 
+        paths: { 
+            'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' 
+        }
+    });
+    
+    // 预加载 Monaco
+    require(['vs/editor/editor.main'], function() {
+        window.monacoReady = true;
+        console.log('✅ Monaco Editor loaded successfully');
+    });
+
     // --- State & Elements ---
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
@@ -836,8 +1142,19 @@
     let helpSchemaRaw = null; // Raw JSON string for persistence
     let helpSchemaFilename = null; // Help schema filename
     
+    // View state
+    let currentView = 'tree'; // 'tree' | 'xml'
+    let xmlViewRendered = false; // Track if XML view needs re-render
+    
     // Help drop zone element
     const helpDropZone = document.getElementById('help-drop-zone');
+    
+    // View elements
+    const viewTabs = document.querySelectorAll('.view-tab');
+    const treeViewContainer = document.getElementById('tree-view-container');
+    const xmlViewContainer = document.getElementById('xml-view-container');
+    const xmlContentEl = document.getElementById('xml-content');
+    const xmlInfoEl = document.getElementById('xml-info');
 
     // --- LocalStorage Keys ---
     const STORAGE_KEYS = {
@@ -852,7 +1169,9 @@
         DETAIL_SEARCH_SCOPE: 'xml_browser_detail_search_scope',
         DETAIL_SORT_STATE: 'xml_browser_detail_sort_state',
         HELP_SCHEMA: 'xml_browser_help_schema',
-        HELP_SCHEMA_FILENAME: 'xml_browser_help_schema_filename'
+        HELP_SCHEMA_FILENAME: 'xml_browser_help_schema_filename',
+        CURRENT_VIEW: 'xml_browser_current_view',
+        XML_FOLD_STATE: 'xml_browser_xml_fold_state'
     };
 
     // --- Event Listeners ---
@@ -999,6 +1318,17 @@
         saveStateToStorage();
     });
 
+    // --- View Tab Event Listeners ---
+    viewTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchView(tab.dataset.view);
+        });
+    });
+
+    // XML View toolbar buttons
+    document.getElementById('xml-fold-all').addEventListener('click', foldAllXmlNodes);
+    document.getElementById('xml-unfold-all').addEventListener('click', unfoldAllXmlNodes);
+
     // --- File Handling ---
     function handleFile(file) {
         if (file.type !== "text/xml" && !file.name.endsWith(".xml")) {
@@ -1040,6 +1370,7 @@
             // Reset states for new file
             currentNodePath = null;
             currentNode = null;
+            xmlViewRendered = false; // Force re-render of XML view
             
             // Step 4: Render tree
             try {
@@ -1056,6 +1387,11 @@
             } catch (err) {
                 console.error("Error resetting detail view:", err);
                 alert("重置详情面板错误: " + err.message);
+            }
+            
+            // Step 6: If currently on XML view, render it
+            if (currentView === 'xml') {
+                renderXmlView();
             }
             
             // Save state to localStorage
@@ -1499,6 +1835,122 @@
                 helpTooltip.classList.remove('above');
             }
         }, 150);
+    }
+
+    // --- View Switching ---
+    function switchView(viewName) {
+        if (currentView === viewName) return;
+        
+        currentView = viewName;
+        
+        // Update Tab styles
+        viewTabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.view === viewName);
+        });
+        
+        // Toggle container visibility
+        treeViewContainer.classList.toggle('active', viewName === 'tree');
+        xmlViewContainer.classList.toggle('active', viewName === 'xml');
+        
+        // If switching to XML View and we have XML content, render it
+        if (viewName === 'xml' && xmlRawContent) {
+            if (!xmlViewRendered) {
+                renderXmlView();
+            }
+        }
+        
+        saveStateToStorage();
+    }
+
+    // --- XML View Rendering ---
+    function renderXmlView() {
+        if (!xmlRawContent) {
+            xmlContentEl.innerHTML = `
+                <div class="xml-empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p>加载 XML 文件后在此查看原始内容</p>
+                </div>`;
+            return;
+        }
+        
+        // Wait for Monaco to be loaded
+        if (!window.monacoReady) {
+            xmlContentEl.innerHTML = `
+                <div class="xml-empty-state">
+                    <p>正在加载代码编辑器...</p>
+                </div>`;
+            setTimeout(() => renderXmlView(), 200);
+            return;
+        }
+        
+        // Clear existing content
+        xmlContentEl.innerHTML = '';
+        
+        try {
+            // Destroy existing editor if any
+            if (window.monacoEditor) {
+                window.monacoEditor.dispose();
+                window.monacoEditor = null;
+            }
+            
+            // Create Monaco editor
+            window.monacoEditor = monaco.editor.create(xmlContentEl, {
+                value: xmlRawContent,
+                language: 'xml',
+                theme: 'vs-dark',
+                readOnly: true,
+                automaticLayout: true,
+                minimap: { enabled: true },
+                folding: true,
+                foldingStrategy: 'indentation',
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                fontSize: 14,
+                fontFamily: "'Consolas', 'Monaco', 'Fira Code', monospace"
+            });
+            
+            // Update info
+            updateXmlInfo();
+            
+            xmlViewRendered = true;
+        } catch (err) {
+            console.error('Monaco initialization error:', err);
+            xmlContentEl.innerHTML = `
+                <div class="xml-empty-state">
+                    <p style="color: #dc2626;">初始化编辑器失败: ${err.message}</p>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">请检查浏览器控制台了解详情</p>
+                </div>`;
+        }
+    }
+
+    function foldAllXmlNodes() {
+        if (window.monacoEditor) {
+            // Monaco: 折叠所有可折叠区域
+            window.monacoEditor.getAction('editor.foldAll').run();
+            updateXmlInfo();
+        }
+    }
+
+    function unfoldAllXmlNodes() {
+        if (window.monacoEditor) {
+            // Monaco: 展开所有折叠区域
+            window.monacoEditor.getAction('editor.unfoldAll').run();
+            updateXmlInfo();
+        }
+    }
+
+    function updateXmlInfo() {
+        if (!xmlRawContent) {
+            xmlInfoEl.textContent = '';
+            return;
+        }
+        
+        const lines = xmlRawContent.split('\n').length;
+        const size = (xmlRawContent.length / 1024).toFixed(2);
+        xmlInfoEl.textContent = `${lines} 行 | ${size} KB`;
     }
 
     // --- Tree Rendering ---
@@ -2078,6 +2530,9 @@
             if (helpSchemaFilename) {
                 localStorage.setItem(STORAGE_KEYS.HELP_SCHEMA_FILENAME, helpSchemaFilename);
             }
+            
+            // Save current view state
+            localStorage.setItem(STORAGE_KEYS.CURRENT_VIEW, currentView);
         } catch (e) {
             console.warn('Failed to save state to localStorage:', e);
             // localStorage might be full or disabled
@@ -2122,6 +2577,9 @@
             
             // Restore selected node path
             const savedNodePath = localStorage.getItem(STORAGE_KEYS.SELECTED_NODE_PATH);
+            
+            // Restore current view state
+            const savedCurrentView = localStorage.getItem(STORAGE_KEYS.CURRENT_VIEW);
             
             // Apply tree panel states
             if (savedTreeSearchText !== null) {
@@ -2228,6 +2686,22 @@
                             // Highlight parent path
                             highlightParentPath(currentNodePath);
                         }, 0);
+                    }
+                }
+                
+                // Restore view state (tree vs xml)
+                if (savedCurrentView && savedCurrentView !== 'tree') {
+                    // Switch to saved view
+                    currentView = savedCurrentView;
+                    viewTabs.forEach(tab => {
+                        tab.classList.toggle('active', tab.dataset.view === savedCurrentView);
+                    });
+                    treeViewContainer.classList.toggle('active', savedCurrentView === 'tree');
+                    xmlViewContainer.classList.toggle('active', savedCurrentView === 'xml');
+                    
+                    // If XML view, render it
+                    if (savedCurrentView === 'xml') {
+                        renderXmlView();
                     }
                 }
             }
