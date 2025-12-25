@@ -466,6 +466,10 @@
                     <span class="tree-sort-icon" id="tree-sort-icon">↕</span>
                     <span>排序</span>
                 </button>
+                <button class="tree-sort-btn" id="tree-toggle-btn">
+                    <span class="tree-sort-icon" id="tree-toggle-icon">⊞</span>
+                    <span id="tree-toggle-text">展开</span>
+                </button>
             </div>
         </div>
         
@@ -528,6 +532,9 @@
     const treeSearchInput = document.getElementById('tree-search-input');
     const treeSortBtn = document.getElementById('tree-sort-btn');
     const treeSortIcon = document.getElementById('tree-sort-icon');
+    const treeToggleBtn = document.getElementById('tree-toggle-btn');
+    const treeToggleIcon = document.getElementById('tree-toggle-icon');
+    const treeToggleText = document.getElementById('tree-toggle-text');
     const detailPanel = document.getElementById('detail-panel');
     const detailContent = document.getElementById('detail-content');
     const searchBar = document.getElementById('search-bar');
@@ -543,6 +550,7 @@
     let treeSearchText = '';
     let treeSearchScope = 'both'; // 'name', 'value', 'both'
     let treeSortState = 'natural'; // 'natural', 'asc', 'desc'
+    let treeExpanded = false; // false = collapsed, true = expanded
 
     // --- Event Listeners ---
     dropZone.addEventListener('click', () => fileInput.click());
@@ -620,6 +628,29 @@
         if (xmlDoc) {
             renderTree(xmlDoc);
         }
+    });
+
+    treeToggleBtn.addEventListener('click', () => {
+        treeExpanded = !treeExpanded;
+        
+        // Update button icon and text
+        if (treeExpanded) {
+            treeToggleIcon.textContent = '⊟';
+            treeToggleText.textContent = '折叠';
+        } else {
+            treeToggleIcon.textContent = '⊞';
+            treeToggleText.textContent = '展开';
+        }
+        
+        // Toggle all tree nodes
+        const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+        treeNodes.forEach(node => {
+            if (treeExpanded) {
+                node.classList.add('expanded');
+            } else {
+                node.classList.remove('expanded');
+            }
+        });
     });
 
     // --- File Handling ---
