@@ -111,6 +111,12 @@
             font-weight: 500;
         }
 
+        .tree-content.parent-path {
+            background-color: #f0f7ff;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 5px;
+        }
+
         .toggle-icon {
             width: 16px;
             height: 16px;
@@ -772,9 +778,24 @@
         content.onclick = (e) => {
             e.stopPropagation();
             
-            // Handle Selection Visuals
+            // Clear previous selection and parent path highlights
             document.querySelectorAll('.tree-content.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.tree-content.parent-path').forEach(el => el.classList.remove('parent-path'));
+            
+            // Add selected class to current node
             content.classList.add('selected');
+            
+            // Highlight parent path from current node to root
+            let parentElement = li.parentElement;
+            while (parentElement) {
+                if (parentElement.classList && parentElement.classList.contains('tree-node')) {
+                    const parentContent = parentElement.querySelector(':scope > .tree-content');
+                    if (parentContent) {
+                        parentContent.classList.add('parent-path');
+                    }
+                }
+                parentElement = parentElement.parentElement;
+            }
 
             // Save current node and path
             currentNode = xmlNode;
