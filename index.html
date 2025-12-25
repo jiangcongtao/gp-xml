@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern XML Browser</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --bg-color: #f3f4f6;
+            --panel-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --hover-color: #eff6ff;
+            --selected-bg: #dbeafe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header & Upload Area */
+        header {
+            background: var(--panel-bg);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        #drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1.5rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        #drop-zone.dragover {
+            border-color: var(--primary-color);
+            background-color: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        /* Main Layout */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* Left Panel: Tree View */
+        #tree-panel {
+            width: 350px;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 1rem;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tree-node {
+            cursor: pointer;
+            padding: 4px 0;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .tree-content {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .tree-content:hover {
+            background-color: var(--hover-color);
+        }
+
+        .tree-content.selected {
+            background-color: var(--selected-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .toggle-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #9ca3af;
+            transition: transform 0.2s;
+        }
+
+        .expanded > .tree-content > .toggle-icon {
+            transform: rotate(90deg);
+        }
+
+        .leaf-node .toggle-icon {
+            visibility: hidden;
+        }
+
+        .node-children {
+            padding-left: 20px;
+            display: none;
+            border-left: 1px solid #f0f0f0;
+            margin-left: 7px;
+        }
+
+        .expanded > .node-children {
+            display: block;
+        }
+
+        .tag-name {
+            margin-right: 8px;
+        }
+
+        /* Right Panel: Detail View */
+        #detail-panel {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Search Filter Bar */
+        .search-filter-bar {
+            background: var(--panel-bg);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: none; /* Hidden by default */
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .search-filter-bar.visible {
+            display: block;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .search-input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-scope {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-scope label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .search-scope input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .search-info {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .detail-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        .detail-card {
+            background: var(--panel-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fff;
+        }
+
+        .card-header h2 {
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .path-breadcrumb {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s;
+        }
+
+        th.sortable:hover {
+            background-color: #e2e8f0;
+        }
+
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td.attr-name {
+            font-weight: 500;
+            color: var(--primary-color);
+            width: 30%;
+        }
+
+        td.attr-value {
+            color: #4b5563;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+            #tree-panel {
+                width: 100%;
+                height: 40%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>XML Browser</h1>
+    <div id="drop-zone">
+        Drag & Drop XML file here or Click to Upload
+    </div>
+    <input type="file" id="file-input" accept=".xml" style="display: none;">
+</header>
+
+<main>
+    <div id="tree-panel">
+        <div class="empty-state" style="height: auto; padding-top: 2rem;">
+            No file loaded.
+        </div>
+    </div>
+    
+    <div id="detail-panel">
+        <!-- Search Filter Bar (hidden by default) -->
+        <div class="search-filter-bar" id="search-bar">
+            <div class="search-controls">
+                <div class="search-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="搜索 Property/Tag 或 Value..."
+                    />
+                </div>
+                <div class="search-scope">
+                    <label>
+                        <input type="radio" name="search-scope" value="property" />
+                        仅 Property/Tag
+                    </label>
+                    <label>
+                        <input type="radio" name="search-scope" value="value" />
+                        仅 Value
+                    </label>
+                    <label>
+                        <input type="radio" name="search-scope" value="both" checked />
+                        Property/Tag 或 Value
+                    </label>
+                </div>
+            </div>
+            <div class="search-info" id="search-info"></div>
+        </div>
+        
+        <!-- Detail Content -->
+        <div class="detail-content" id="detail-content">
+            <div class="empty-state">
+                <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p>Select a node from the tree to view details</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // --- State & Elements ---
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const treePanel = document.getElementById('tree-panel');
+    const detailPanel = document.getElementById('detail-panel');
+    const detailContent = document.getElementById('detail-content');
+    const searchBar = document.getElementById('search-bar');
+    const searchInput = document.getElementById('search-input');
+    const searchInfo = document.getElementById('search-info');
+    let xmlDoc = null;
+    let currentNode = null;
+    let sortState = 'natural'; // 'natural', 'asc', 'desc'
+    let searchText = ''; // 搜索文本
+    let searchScope = 'both'; // 'property', 'value', 'both'
+
+    // --- Event Listeners ---
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    // --- Search Event Listeners ---
+    searchInput.addEventListener('input', (e) => {
+        searchText = e.target.value;
+        if (currentNode) {
+            showNodeDetails(currentNode);
+        }
+    });
+
+    document.querySelectorAll('input[name="search-scope"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            searchScope = e.target.value;
+            if (currentNode) {
+                showNodeDetails(currentNode);
+            }
+        });
+    });
+
+    // --- File Handling ---
+    function handleFile(file) {
+        if (file.type !== "text/xml" && !file.name.endsWith(".xml")) {
+            alert("Please upload a valid XML file.");
+            return;
+        }
+
+        dropZone.textContent = `File: ${file.name}`;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const parser = new DOMParser();
+            try {
+                xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+                if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+                    throw new Error("Error parsing XML");
+                }
+                renderTree(xmlDoc);
+                resetDetailView();
+            } catch (err) {
+                alert("Invalid XML content.");
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // --- Tree Rendering ---
+    function renderTree(doc) {
+        treePanel.innerHTML = '';
+        const root = doc.documentElement;
+        treePanel.appendChild(createTreeNode(root));
+    }
+
+    function createTreeNode(xmlNode) {
+        const hasChildren = hasElementChildren(xmlNode);
+        
+        // Container for the node
+        const li = document.createElement('div');
+        li.className = `tree-node ${hasChildren ? '' : 'leaf-node'}`;
+
+        // The visible content line (Icon + Tag Name)
+        const content = document.createElement('div');
+        content.className = 'tree-content';
+        
+        // Arrow Icon
+        const icon = document.createElement('span');
+        icon.className = 'toggle-icon';
+        icon.textContent = '▶'; 
+        content.appendChild(icon);
+
+        // Tag Name
+        const title = document.createElement('span');
+        title.className = 'tag-name';
+        title.textContent = xmlNode.nodeName;
+        content.appendChild(title);
+
+        // Click Handler: Selection & Toggling
+        content.onclick = (e) => {
+            e.stopPropagation();
+            
+            // Handle Selection Visuals
+            document.querySelectorAll('.tree-content.selected').forEach(el => el.classList.remove('selected'));
+            content.classList.add('selected');
+
+            // Reset sort state when selecting a new node
+            sortState = 'natural';
+
+            // Show Details
+            showNodeDetails(xmlNode);
+
+            // Toggle Expansion if it has children
+            if (hasChildren) {
+                li.classList.toggle('expanded');
+            }
+        };
+
+        li.appendChild(content);
+
+        // Recursively build children
+        if (hasChildren) {
+            const childrenContainer = document.createElement('div');
+            childrenContainer.className = 'node-children';
+            
+            Array.from(xmlNode.children).forEach(child => {
+                childrenContainer.appendChild(createTreeNode(child));
+            });
+            li.appendChild(childrenContainer);
+        }
+
+        return li;
+    }
+
+    function hasElementChildren(node) {
+        return node.children && node.children.length > 0;
+    }
+
+    // --- Sorting Logic ---
+    function applySorting(data, state) {
+        if (state === 'natural') {
+            return data; // Keep original order
+        }
+        
+        const sorted = [...data]; // Create a copy to avoid mutating original
+        sorted.sort((a, b) => {
+            const nameA = a.name.toLowerCase();
+            const nameB = b.name.toLowerCase();
+            
+            if (state === 'asc') {
+                return nameA.localeCompare(nameB);
+            } else if (state === 'desc') {
+                return nameB.localeCompare(nameA);
+            }
+            return 0;
+        });
+        
+        return sorted;
+    }
+
+    // --- Filtering Logic ---
+    function applyFiltering(data, text, scope) {
+        if (!text || text.trim() === '') {
+            return data; // No filter applied
+        }
+        
+        const searchLower = text.toLowerCase().trim();
+        
+        return data.filter(item => {
+            const nameMatch = item.name.toLowerCase().includes(searchLower);
+            const valueMatch = item.value.toLowerCase().includes(searchLower);
+            
+            switch(scope) {
+                case 'property':
+                    return nameMatch;
+                case 'value':
+                    return valueMatch;
+                case 'both':
+                default:
+                    return nameMatch || valueMatch;
+            }
+        });
+    }
+
+    function toggleSortState() {
+        if (sortState === 'natural') {
+            sortState = 'asc';
+        } else if (sortState === 'asc') {
+            sortState = 'desc';
+        } else {
+            sortState = 'natural';
+        }
+    }
+
+    function getSortIndicator() {
+        if (sortState === 'asc') {
+            return ' <span class="sort-indicator">▲</span>';
+        } else if (sortState === 'desc') {
+            return ' <span class="sort-indicator">▼</span>';
+        }
+        return '';
+    }
+
+    // --- Detail View Rendering ---
+    function showNodeDetails(node) {
+        // Save current node for re-rendering on sort
+        currentNode = node;
+        
+        // Show search bar when details are displayed
+        searchBar.classList.add('visible');
+        
+        // Collect attributes
+        const attributes = Array.from(node.attributes || []).map(attr => ({
+            name: `@${attr.name}`,
+            value: attr.value
+        }));
+
+        // Collect direct child text nodes or leaf element nodes
+        let directData = [];
+        
+        // Check for text content directly in this node (mixed content)
+        const textContent = Array.from(node.childNodes)
+            .filter(n => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim() !== "")
+            .map(n => n.nodeValue.trim())
+            .join(" ");
+
+        if (textContent) {
+            directData.push({ name: '#text', value: textContent });
+        }
+
+        // Collect "Leaf" Children (Elements that contain only text)
+        Array.from(node.children).forEach(child => {
+            if (!hasElementChildren(child)) {
+                directData.push({
+                    name: child.nodeName,
+                    value: child.textContent
+                });
+            }
+        });
+
+        const allData = [...attributes, ...directData];
+
+        if (allData.length === 0) {
+            detailContent.innerHTML = `
+                <div class="empty-state">
+                    <p>No direct attributes or leaf children values.</p>
+                </div>`;
+            updateSearchInfo(0, 0);
+            return;
+        }
+
+        const path = getNodePath(node);
+        
+        // Apply filtering first
+        const filteredData = applyFiltering(allData, searchText, searchScope);
+        
+        // Update search info
+        updateSearchInfo(filteredData.length, allData.length);
+        
+        // Then apply sorting
+        const sortedData = applySorting(filteredData, sortState);
+
+        let html = `
+            <div class="detail-card">
+                <div class="card-header">
+                    <h2>${node.nodeName}</h2>
+                    <div class="path-breadcrumb">${path}</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable" id="sort-header">Property / Tag${getSortIndicator()}</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        if (sortedData.length === 0) {
+            html += `
+                <tr>
+                    <td colspan="2" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                        没有匹配的结果
+                    </td>
+                </tr>
+            `;
+        } else {
+            sortedData.forEach(item => {
+                html += `
+                    <tr>
+                        <td class="attr-name">${escapeHtml(item.name)}</td>
+                        <td class="attr-value">${escapeHtml(item.value)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        detailContent.innerHTML = html;
+        
+        // Add click handler to sortable header
+        const sortHeader = document.getElementById('sort-header');
+        if (sortHeader) {
+            sortHeader.onclick = () => {
+                toggleSortState();
+                showNodeDetails(currentNode);
+            };
+        }
+    }
+
+    function updateSearchInfo(filtered, total) {
+        if (!searchText || searchText.trim() === '') {
+            searchInfo.textContent = '';
+        } else {
+            searchInfo.textContent = `显示 ${filtered} / ${total} 项`;
+        }
+    }
+
+    function resetDetailView() {
+        // Hide search bar when no node is selected
+        searchBar.classList.remove('visible');
+        searchText = '';
+        searchInput.value = '';
+        searchInfo.textContent = '';
+        
+        detailContent.innerHTML = `
+            <div class="empty-state">
+                <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p>Select a node from the tree to view details</p>
+            </div>`;
+    }
+
+    function getNodePath(node) {
+        const path = [];
+        let current = node;
+        while (current && current.nodeType === Node.ELEMENT_NODE) {
+            path.unshift(current.nodeName);
+            current = current.parentNode;
+        }
+        return path.join('.');
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>
+
+</body>
+</html>
