@@ -146,6 +146,97 @@
             margin-right: 8px;
         }
 
+        /* Tree Panel Controls */
+        .tree-controls {
+            background: var(--panel-bg);
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            display: none;
+            flex-shrink: 0;
+            margin: -1rem -1rem 1rem -1rem;
+        }
+
+        .tree-controls.visible {
+            display: block;
+        }
+
+        .tree-search-wrapper {
+            margin-bottom: 0.5rem;
+        }
+
+        .tree-search-wrapper input {
+            width: 100%;
+            padding: 0.4rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .tree-search-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .tree-options {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 0.75rem;
+        }
+
+        .tree-scope-group {
+            display: flex;
+            gap: 0.4rem;
+            flex: 1;
+        }
+
+        .tree-scope-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .tree-scope-group input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .tree-sort-btn {
+            padding: 0.3rem 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: #6b7280;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        .tree-sort-btn:hover {
+            background-color: var(--hover-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tree-sort-icon {
+            font-size: 0.7rem;
+        }
+
+        .tree-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
         /* Right Panel: Detail View */
         #detail-panel {
             flex: 1;
@@ -347,8 +438,42 @@
 
 <main>
     <div id="tree-panel">
-        <div class="empty-state" style="height: auto; padding-top: 2rem;">
-            No file loaded.
+        <!-- Tree Controls (hidden by default) -->
+        <div class="tree-controls" id="tree-controls">
+            <div class="tree-search-wrapper">
+                <input 
+                    type="text" 
+                    id="tree-search-input" 
+                    placeholder="搜索节点名称或值..."
+                />
+            </div>
+            <div class="tree-options">
+                <div class="tree-scope-group">
+                    <label>
+                        <input type="radio" name="tree-search-scope" value="name" />
+                        名称
+                    </label>
+                    <label>
+                        <input type="radio" name="tree-search-scope" value="value" />
+                        值
+                    </label>
+                    <label>
+                        <input type="radio" name="tree-search-scope" value="both" checked />
+                        全部
+                    </label>
+                </div>
+                <button class="tree-sort-btn" id="tree-sort-btn">
+                    <span class="tree-sort-icon" id="tree-sort-icon">↕</span>
+                    <span>排序</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tree Container -->
+        <div class="tree-container" id="tree-container">
+            <div class="empty-state" style="height: auto; padding-top: 2rem;">
+                No file loaded.
+            </div>
         </div>
     </div>
     
@@ -398,6 +523,11 @@
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const treePanel = document.getElementById('tree-panel');
+    const treeContainer = document.getElementById('tree-container');
+    const treeControls = document.getElementById('tree-controls');
+    const treeSearchInput = document.getElementById('tree-search-input');
+    const treeSortBtn = document.getElementById('tree-sort-btn');
+    const treeSortIcon = document.getElementById('tree-sort-icon');
     const detailPanel = document.getElementById('detail-panel');
     const detailContent = document.getElementById('detail-content');
     const searchBar = document.getElementById('search-bar');
@@ -405,9 +535,14 @@
     const searchInfo = document.getElementById('search-info');
     let xmlDoc = null;
     let currentNode = null;
-    let sortState = 'natural'; // 'natural', 'asc', 'desc'
-    let searchText = ''; // 搜索文本
-    let searchScope = 'both'; // 'property', 'value', 'both'
+    let currentNodePath = null; // Store path for re-selection
+    let sortState = 'natural'; // 'natural', 'asc', 'desc' (for detail panel)
+    let searchText = ''; // 搜索文本 (for detail panel)
+    let searchScope = 'both'; // 'property', 'value', 'both' (for detail panel)
+    // Tree panel states
+    let treeSearchText = '';
+    let treeSearchScope = 'both'; // 'name', 'value', 'both'
+    let treeSortState = 'natural'; // 'natural', 'asc', 'desc'
 
     // --- Event Listeners ---
     dropZone.addEventListener('click', () => fileInput.click());
@@ -452,6 +587,41 @@
         });
     });
 
+    // --- Tree Search & Sort Event Listeners ---
+    treeSearchInput.addEventListener('input', (e) => {
+        treeSearchText = e.target.value;
+        if (xmlDoc) {
+            renderTree(xmlDoc);
+        }
+    });
+
+    document.querySelectorAll('input[name="tree-search-scope"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            treeSearchScope = e.target.value;
+            if (xmlDoc) {
+                renderTree(xmlDoc);
+            }
+        });
+    });
+
+    treeSortBtn.addEventListener('click', () => {
+        // Cycle through sort states
+        if (treeSortState === 'natural') {
+            treeSortState = 'asc';
+            treeSortIcon.textContent = '▲';
+        } else if (treeSortState === 'asc') {
+            treeSortState = 'desc';
+            treeSortIcon.textContent = '▼';
+        } else {
+            treeSortState = 'natural';
+            treeSortIcon.textContent = '↕';
+        }
+        
+        if (xmlDoc) {
+            renderTree(xmlDoc);
+        }
+    });
+
     // --- File Handling ---
     function handleFile(file) {
         if (file.type !== "text/xml" && !file.name.endsWith(".xml")) {
@@ -464,34 +634,92 @@
         const reader = new FileReader();
         reader.onload = (e) => {
             const parser = new DOMParser();
+            
+            // Step 1: Parse XML
+            const parsedDoc = parser.parseFromString(e.target.result, "text/xml");
+            
+            // Step 2: Check for parser errors (handle namespaced parsererror)
+            const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
+                                parsedDoc.querySelector("parsererror");
+            if (parserError) {
+                console.error("XML Parser Error:", parserError.textContent);
+                alert("XML 解析错误: " + parserError.textContent);
+                return;
+            }
+            
+            // Step 3: Check if we have a valid document element
+            if (!parsedDoc.documentElement || parsedDoc.documentElement.nodeName === "html") {
+                console.error("Invalid XML document structure");
+                alert("无效的 XML 文档结构");
+                return;
+            }
+            
+            // Store the parsed document
+            xmlDoc = parsedDoc;
+            
+            // Step 4: Render tree
             try {
-                xmlDoc = parser.parseFromString(e.target.result, "text/xml");
-                if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
-                    throw new Error("Error parsing XML");
-                }
                 renderTree(xmlDoc);
+            } catch (err) {
+                console.error("Error rendering tree:", err);
+                alert("树渲染错误: " + err.message);
+                return;
+            }
+            
+            // Step 5: Reset detail view
+            try {
                 resetDetailView();
             } catch (err) {
-                alert("Invalid XML content.");
-                console.error(err);
+                console.error("Error resetting detail view:", err);
+                alert("重置详情面板错误: " + err.message);
             }
         };
+        
+        reader.onerror = (err) => {
+            console.error("FileReader error:", err);
+            alert("Error reading file.");
+        };
+        
         reader.readAsText(file);
     }
 
     // --- Tree Rendering ---
     function renderTree(doc) {
-        treePanel.innerHTML = '';
-        const root = doc.documentElement;
-        treePanel.appendChild(createTreeNode(root));
+        try {
+            treeContainer.innerHTML = '';
+            const root = doc.documentElement;
+            const rootNode = createTreeNode(root);
+            if (rootNode) {
+                treeContainer.appendChild(rootNode);
+                
+                // Show tree controls after rendering
+                treeControls.classList.add('visible');
+                
+                // Restore selection if we have a saved path
+                if (currentNodePath) {
+                    setTimeout(() => restoreNodeSelection(currentNodePath), 0);
+                }
+            } else {
+                treeContainer.innerHTML = '<div class="empty-state" style="height: auto; padding-top: 2rem;">No matching nodes found.</div>';
+            }
+        } catch (err) {
+            console.error("Error rendering tree:", err);
+            throw err;
+        }
     }
 
     function createTreeNode(xmlNode) {
+        // Check if this node should be shown based on search filter
+        if (!shouldShowNode(xmlNode, treeSearchText, treeSearchScope)) {
+            return null;
+        }
+        
         const hasChildren = hasElementChildren(xmlNode);
         
         // Container for the node
         const li = document.createElement('div');
         li.className = `tree-node ${hasChildren ? '' : 'leaf-node'}`;
+        li.dataset.nodePath = getNodePath(xmlNode); // Store path for selection
 
         // The visible content line (Icon + Tag Name)
         const content = document.createElement('div');
@@ -517,7 +745,11 @@
             document.querySelectorAll('.tree-content.selected').forEach(el => el.classList.remove('selected'));
             content.classList.add('selected');
 
-            // Reset sort state when selecting a new node
+            // Save current node and path
+            currentNode = xmlNode;
+            currentNodePath = getNodePath(xmlNode);
+
+            // Reset detail panel sort state when selecting a new node
             sortState = 'natural';
 
             // Show Details
@@ -536,10 +768,23 @@
             const childrenContainer = document.createElement('div');
             childrenContainer.className = 'node-children';
             
-            Array.from(xmlNode.children).forEach(child => {
-                childrenContainer.appendChild(createTreeNode(child));
+            // Apply sorting to children
+            const sortedChildren = sortTreeChildren(xmlNode.children, treeSortState);
+            
+            sortedChildren.forEach(child => {
+                const childNode = createTreeNode(child);
+                if (childNode) { // Only append if not filtered out
+                    childrenContainer.appendChild(childNode);
+                }
             });
-            li.appendChild(childrenContainer);
+            
+            // Only add children container if it has visible children
+            if (childrenContainer.children.length > 0) {
+                li.appendChild(childrenContainer);
+            } else if (!nodeMatchesSearch(xmlNode, treeSearchText, treeSearchScope)) {
+                // If no children are visible and current node doesn't match, hide it
+                return null;
+            }
         }
 
         return li;
@@ -547,6 +792,88 @@
 
     function hasElementChildren(node) {
         return node.children && node.children.length > 0;
+    }
+
+    // --- Tree Node Matching & Filtering ---
+    // Collect all descendant text values from a node
+    function collectNodeValues(xmlNode) {
+        const values = [];
+        
+        function collectRecursive(node) {
+            // Get direct text content
+            Array.from(node.childNodes).forEach(child => {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    const text = child.nodeValue.trim();
+                    if (text) {
+                        values.push(text);
+                    }
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    // If it's a leaf element, get its text content
+                    if (!hasElementChildren(child)) {
+                        const text = child.textContent.trim();
+                        if (text) {
+                            values.push(text);
+                        }
+                    } else {
+                        // Otherwise recurse
+                        collectRecursive(child);
+                    }
+                }
+            });
+        }
+        
+        collectRecursive(xmlNode);
+        return values;
+    }
+
+    // Check if a node matches the search criteria
+    function nodeMatchesSearch(xmlNode, searchText, scope) {
+        if (!searchText || searchText.trim() === '') {
+            return true; // No search, show all
+        }
+        
+        const searchLower = searchText.toLowerCase().trim();
+        
+        // Check node name
+        const nameMatch = xmlNode.nodeName.toLowerCase().includes(searchLower);
+        
+        if (scope === 'name') {
+            return nameMatch;
+        }
+        
+        // Check values
+        const values = collectNodeValues(xmlNode);
+        const valueMatch = values.some(val => val.toLowerCase().includes(searchLower));
+        
+        if (scope === 'value') {
+            return valueMatch;
+        }
+        
+        // scope === 'both'
+        return nameMatch || valueMatch;
+    }
+
+    // Check if node or any of its descendants should be shown
+    function shouldShowNode(xmlNode, searchText, scope) {
+        if (!searchText || searchText.trim() === '') {
+            return true; // No filter
+        }
+        
+        // Check if current node matches
+        if (nodeMatchesSearch(xmlNode, searchText, scope)) {
+            return true;
+        }
+        
+        // Check if any child matches (recursively)
+        if (xmlNode.children) {
+            for (let child of xmlNode.children) {
+                if (shouldShowNode(child, searchText, scope)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     // --- Sorting Logic ---
@@ -569,6 +896,30 @@
         });
         
         return sorted;
+    }
+
+    // Sort tree children (XML nodes)
+    function sortTreeChildren(children, sortState) {
+        // Always convert to array first (HTMLCollection doesn't have forEach)
+        const childArray = Array.from(children);
+        
+        if (sortState === 'natural') {
+            return childArray; // Keep original order
+        }
+        
+        childArray.sort((a, b) => {
+            const nameA = a.nodeName.toLowerCase();
+            const nameB = b.nodeName.toLowerCase();
+            
+            if (sortState === 'asc') {
+                return nameA.localeCompare(nameB);
+            } else if (sortState === 'desc') {
+                return nameB.localeCompare(nameA);
+            }
+            return 0;
+        });
+        
+        return childArray;
     }
 
     // --- Filtering Logic ---
@@ -758,6 +1109,25 @@
             current = current.parentNode;
         }
         return path.join('.');
+    }
+
+    // Restore node selection after re-rendering tree
+    function restoreNodeSelection(path) {
+        if (!path) return;
+        
+        // Find the tree node with matching path
+        const treeNodes = treeContainer.querySelectorAll('.tree-node');
+        for (let treeNode of treeNodes) {
+            if (treeNode.dataset.nodePath === path) {
+                const content = treeNode.querySelector('.tree-content');
+                if (content) {
+                    content.classList.add('selected');
+                    // Scroll into view if needed
+                    content.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+                break;
+            }
+        }
     }
 
     function escapeHtml(text) {
