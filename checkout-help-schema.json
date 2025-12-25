@@ -15,7 +15,12 @@
         "Business_Date": {
             "description": "营业日期",
             "type": "date",
-            "format": "YYYY-MM-DD"
+            "format": "MM/DD/YY"
+        },
+        "Hotel_Postal_Code": {
+            "description": "Hotel Post Code",
+            "type": "string",
+            "required": true
         },
         "confirmation_num": {
             "description": "希尔顿订单号",
@@ -26,6 +31,9 @@
     "paths": {
         "System21.Hotel_Code": {
             "$ref": "#/definitions/Hotel_Code"
+        },
+        "System21.Hotel_Postal_Code": {
+            "$ref": "#/definitions/Hotel_Postal_Code"
         },
         "**.Hotel_Code": {
             "$ref": "#/definitions/Hotel_Code"

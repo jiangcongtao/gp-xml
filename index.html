@@ -526,6 +526,47 @@
             border-bottom: 1px solid #4b5563;
         }
 
+        .help-tooltip-error {
+            padding: 0.75rem 1rem;
+            background: #991b1b;
+            color: #fef2f2;
+            border-bottom: 1px solid #7f1d1d;
+        }
+
+        .help-tooltip-error:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .help-tooltip-error-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .help-tooltip-error-title::before {
+            content: '⚠️';
+        }
+
+        .help-tooltip-error-list {
+            margin: 0;
+            padding-left: 1.2rem;
+            font-size: 0.8rem;
+        }
+
+        .help-tooltip-error-list li {
+            margin-bottom: 0.25rem;
+        }
+
+        .help-tooltip-error-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-tooltip-error + .help-tooltip-header {
+            border-radius: 0;
+        }
+
         .help-tooltip-body {
             padding: 0.75rem 1rem;
         }
@@ -598,6 +639,35 @@
             display: inline-flex;
         }
 
+        /* Validation Error Styles */
+        .validation-error {
+            color: #dc2626 !important;
+        }
+
+        .validation-error::before {
+            content: '⚠';
+            margin-right: 4px;
+            font-size: 0.85em;
+        }
+
+        .tree-content .validation-error::before {
+            display: none;
+        }
+
+        .tree-content:hover .validation-error::before {
+            display: inline;
+        }
+
+        td.attr-name.validation-error {
+            color: #dc2626 !important;
+        }
+
+        td.attr-value.validation-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-left: 3px solid #dc2626;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             main {
@@ -632,11 +702,8 @@
     </div>
 </header>
 
-<!-- Help Tooltip Element -->
-<div id="help-tooltip" class="help-tooltip">
-    <div class="help-tooltip-header" id="tooltip-header"></div>
-    <div class="help-tooltip-body" id="tooltip-body"></div>
-</div>
+<!-- Help Tooltip Element (also shows validation errors) -->
+<div id="help-tooltip" class="help-tooltip"></div>
 
 <main>
     <div id="tree-panel">
@@ -748,8 +815,6 @@
     const helpFileInput = document.getElementById('help-file-input');
     const helpStatusText = document.getElementById('help-status-text');
     const helpTooltip = document.getElementById('help-tooltip');
-    const tooltipHeader = document.getElementById('tooltip-header');
-    const tooltipBody = document.getElementById('tooltip-body');
     
     let xmlDoc = null;
     let xmlRawContent = null; // Store raw XML string for localStorage persistence
@@ -1148,14 +1213,145 @@
             }
         }
         
+        // 5. Try partial path match (last segment of path)
+        const pathParts = path.split('.');
+        for (let i = pathParts.length - 1; i >= 0; i--) {
+            const partialPath = pathParts.slice(i).join('.');
+            if (helpSchema.paths[partialPath]) {
+                return helpSchema.paths[partialPath];
+            }
+        }
+        
+        return null;
+    }
+
+    // --- Validation Functions ---
+    // Validate a value against help schema definition
+    function validateValue(value, helpContent) {
+        const result = { valid: true, errors: [] };
+        
+        if (!helpContent) return result;
+        
+        // Handle value - could be undefined, null, or empty string
+        const trimmedValue = (value === undefined || value === null) ? '' : String(value).trim();
+        
+        // 1. Required validation - check for true, "true", or 1
+        const isRequired = helpContent.required === true || 
+                          helpContent.required === 'true' || 
+                          helpContent.required === 1;
+        
+        if (isRequired && trimmedValue === '') {
+            result.valid = false;
+            result.errors.push('此字段为必填项');
+            return result; // No need to continue if empty and required
+        }
+        
+        // Skip other validations if value is empty and not required
+        if (trimmedValue === '') return result;
+        
+        // 2. Type validation
+        if (helpContent.type) {
+            const typeError = validateType(trimmedValue, helpContent.type, helpContent.format);
+            if (typeError) {
+                result.valid = false;
+                result.errors.push(typeError);
+            }
+        }
+        
+        // 3. Format validation (regex) - only for string type or when type is not date
+        if (helpContent.format && helpContent.type !== 'date') {
+            try {
+                const regex = new RegExp(helpContent.format);
+                if (!regex.test(trimmedValue)) {
+                    result.valid = false;
+                    result.errors.push(`格式不匹配，期望格式: ${helpContent.format}`);
+                }
+            } catch (e) {
+                // Invalid regex in schema, skip validation
+                console.warn('Invalid regex in schema:', helpContent.format);
+            }
+        }
+        
+        return result;
+    }
+    
+    // Validate value type
+    function validateType(value, type, format) {
+        switch (type.toLowerCase()) {
+            case 'string':
+                // String type accepts anything
+                return null;
+                
+            case 'integer':
+                if (!/^-?\d+$/.test(value)) {
+                    return `类型错误：期望整数，实际值 "${value}"`;
+                }
+                return null;
+                
+            case 'number':
+                if (isNaN(parseFloat(value)) || !isFinite(value)) {
+                    return `类型错误：期望数字，实际值 "${value}"`;
+                }
+                return null;
+                
+            case 'date':
+                return validateDateFormat(value, format);
+                
+            case 'boolean':
+                if (!['true', 'false', '1', '0', 'yes', 'no'].includes(value.toLowerCase())) {
+                    return `类型错误：期望布尔值，实际值 "${value}"`;
+                }
+                return null;
+                
+            default:
+                return null;
+        }
+    }
+    
+    // Validate date format
+    function validateDateFormat(value, format) {
+        if (!format) {
+            // Try common date formats
+            const datePatterns = [
+                /^\d{4}-\d{2}-\d{2}$/,           // YYYY-MM-DD
+                /^\d{2}\/\d{2}\/\d{4}$/,         // MM/DD/YYYY
+                /^\d{2}\/\d{2}\/\d{2}$/,         // MM/DD/YY
+                /^\d{4}\/\d{2}\/\d{2}$/          // YYYY/MM/DD
+            ];
+            
+            if (!datePatterns.some(p => p.test(value))) {
+                return `日期格式错误：无法识别的日期格式 "${value}"`;
+            }
+            return null;
+        }
+        
+        // Convert format pattern to regex
+        let pattern = format
+            .replace('YYYY', '\\d{4}')
+            .replace('YY', '\\d{2}')
+            .replace('MM', '\\d{2}')
+            .replace('DD', '\\d{2}')
+            .replace('HH', '\\d{2}')
+            .replace('mm', '\\d{2}')
+            .replace('ss', '\\d{2}');
+        
+        try {
+            const regex = new RegExp('^' + pattern + '$');
+            if (!regex.test(value)) {
+                return `日期格式错误：期望 ${format}，实际值 "${value}"`;
+            }
+        } catch (e) {
+            // Invalid pattern, skip
+        }
+        
         return null;
     }
 
     // --- Tooltip Functions ---
     let tooltipTimeout = null;
     
-    function showTooltip(element, helpContent, nodePath) {
-        if (!helpContent) return;
+    function showTooltip(element, helpContent, nodePath, errors) {
+        if (!helpContent && (!errors || errors.length === 0)) return;
         
         // Clear any pending hide
         if (tooltipTimeout) {
@@ -1163,48 +1359,67 @@
             tooltipTimeout = null;
         }
         
-        // Build tooltip content
-        tooltipHeader.textContent = nodePath || '';
+        // Build tooltip content with errors and help
+        let fullHtml = '';
         
-        let bodyHtml = '';
-        
-        if (helpContent.description) {
-            bodyHtml += `<div class="help-tooltip-desc">${escapeHtml(helpContent.description)}</div>`;
-        }
-        
-        if (helpContent.type) {
-            bodyHtml += `
-                <div class="help-tooltip-row">
-                    <span class="help-tooltip-label">类型</span>
-                    <span class="help-tooltip-value">${escapeHtml(helpContent.type)}</span>
+        // Add error section if there are errors
+        if (errors && errors.length > 0) {
+            fullHtml += `
+                <div class="help-tooltip-error">
+                    <div class="help-tooltip-error-title">验证错误</div>
+                    <ul class="help-tooltip-error-list">
+                        ${errors.map(err => `<li>${escapeHtml(err)}</li>`).join('')}
+                    </ul>
                 </div>`;
         }
         
-        if (helpContent.format) {
-            bodyHtml += `
-                <div class="help-tooltip-row">
-                    <span class="help-tooltip-label">格式</span>
-                    <span class="help-tooltip-value">${escapeHtml(helpContent.format)}</span>
-                </div>`;
+        // Add help content section
+        if (helpContent) {
+            fullHtml += `<div class="help-tooltip-header">${escapeHtml(nodePath || '')}</div>`;
+            
+            let bodyHtml = '';
+            
+            if (helpContent.description) {
+                bodyHtml += `<div class="help-tooltip-desc">${escapeHtml(helpContent.description)}</div>`;
+            }
+            
+            if (helpContent.type) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">类型</span>
+                        <span class="help-tooltip-value">${escapeHtml(helpContent.type)}</span>
+                    </div>`;
+            }
+            
+            if (helpContent.format) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">格式</span>
+                        <span class="help-tooltip-value">${escapeHtml(helpContent.format)}</span>
+                    </div>`;
+            }
+            
+            if (helpContent.example !== undefined) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">示例</span>
+                        <span class="help-tooltip-value"><code class="help-tooltip-example">${escapeHtml(String(helpContent.example))}</code></span>
+                    </div>`;
+            }
+            
+            if (helpContent.required !== undefined) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">必填</span>
+                        <span class="help-tooltip-value">${helpContent.required ? '是' : '否'}</span>
+                    </div>`;
+            }
+            
+            fullHtml += `<div class="help-tooltip-body">${bodyHtml}</div>`;
         }
         
-        if (helpContent.example !== undefined) {
-            bodyHtml += `
-                <div class="help-tooltip-row">
-                    <span class="help-tooltip-label">示例</span>
-                    <span class="help-tooltip-value"><code class="help-tooltip-example">${escapeHtml(String(helpContent.example))}</code></span>
-                </div>`;
-        }
-        
-        if (helpContent.required !== undefined) {
-            bodyHtml += `
-                <div class="help-tooltip-row">
-                    <span class="help-tooltip-label">必填</span>
-                    <span class="help-tooltip-value">${helpContent.required ? '是' : '否'}</span>
-                </div>`;
-        }
-        
-        tooltipBody.innerHTML = bodyHtml;
+        // Update tooltip content
+        helpTooltip.innerHTML = fullHtml;
         
         // Position tooltip near the element (below and slightly to the right)
         const rect = element.getBoundingClientRect();
@@ -1319,10 +1534,28 @@
         // Add help indicator if help content exists
         const nodePath = getNodePath(xmlNode);
         const helpContent = findHelpContent(nodePath, xmlNode.nodeName);
-        if (helpContent) {
+        
+        // Validate leaf node values
+        let validationResult = { valid: true, errors: [] };
+        const isLeafNode = !hasElementChildren(xmlNode);
+        if (isLeafNode && helpContent) {
+            const nodeValue = xmlNode.textContent.trim();
+            validationResult = validateValue(nodeValue, helpContent);
+        }
+        
+        // Add validation error styling and tooltip
+        if (!validationResult.valid) {
+            title.classList.add('validation-error');
+            // Show combined tooltip with both errors and help content
+            title.addEventListener('mouseenter', (e) => {
+                showTooltip(title, helpContent, nodePath, validationResult.errors);
+            });
+            title.addEventListener('mouseleave', hideTooltip);
+        } else if (helpContent) {
+            // Show help tooltip only
             title.classList.add('has-help');
             title.addEventListener('mouseenter', (e) => {
-                showTooltip(title, helpContent, nodePath);
+                showTooltip(title, helpContent, nodePath, null);
             });
             title.addEventListener('mouseleave', hideTooltip);
         }
@@ -1662,11 +1895,18 @@
             sortedData.forEach((item, index) => {
                 const itemPath = path + '.' + item.name.replace(/^@/, '');
                 const itemHelp = findHelpContent(itemPath, item.name);
+                
+                // Validate value
+                const validation = itemHelp ? validateValue(item.value, itemHelp) : { valid: true, errors: [] };
+                const hasError = !validation.valid;
+                const errorClass = hasError ? 'validation-error' : '';
                 const hasHelpClass = itemHelp ? 'has-help' : '';
+                const errorsJson = hasError ? escapeHtml(JSON.stringify(validation.errors)) : '';
+                
                 html += `
                     <tr>
-                        <td class="attr-name ${hasHelpClass}" data-item-index="${index}" data-item-name="${escapeHtml(item.name)}" data-item-path="${escapeHtml(itemPath)}">${escapeHtml(item.name)}</td>
-                        <td class="attr-value">${escapeHtml(item.value)}</td>
+                        <td class="attr-name ${hasHelpClass} ${errorClass}" data-item-index="${index}" data-item-name="${escapeHtml(item.name)}" data-item-path="${escapeHtml(itemPath)}" data-errors="${errorsJson}">${escapeHtml(item.name)}</td>
+                        <td class="attr-value ${errorClass}">${escapeHtml(item.value)}</td>
                     </tr>
                 `;
             });
@@ -1690,16 +1930,26 @@
             };
         }
         
-        // Add hover handlers for help tooltips on attribute names
+        // Add hover handlers for tooltips on attribute names (combined help + errors)
         const attrNameCells = detailContent.querySelectorAll('td.attr-name.has-help');
         attrNameCells.forEach(cell => {
             const itemName = cell.dataset.itemName;
             const itemPath = cell.dataset.itemPath;
             const itemHelp = findHelpContent(itemPath, itemName);
+            const errorsJson = cell.dataset.errors;
             
-            if (itemHelp) {
+            let errors = null;
+            if (errorsJson) {
+                try {
+                    errors = JSON.parse(errorsJson);
+                } catch (e) {
+                    console.warn('Failed to parse errors:', e);
+                }
+            }
+            
+            if (itemHelp || (errors && errors.length > 0)) {
                 cell.addEventListener('mouseenter', () => {
-                    showTooltip(cell, itemHelp, itemName);
+                    showTooltip(cell, itemHelp, itemName, errors);
                 });
                 cell.addEventListener('mouseleave', hideTooltip);
             }
