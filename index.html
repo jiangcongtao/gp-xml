@@ -547,6 +547,8 @@
     const searchInput = document.getElementById('search-input');
     const searchInfo = document.getElementById('search-info');
     let xmlDoc = null;
+    let xmlRawContent = null; // Store raw XML string for localStorage persistence
+    let xmlFilename = null; // Store filename for display after restore
     let currentNode = null;
     let currentNodePath = null; // Store path for re-selection
     let sortState = 'natural'; // 'natural', 'asc', 'desc' (for detail panel)
@@ -557,6 +559,20 @@
     let treeSearchScope = 'both'; // 'name', 'value', 'both'
     let treeSortState = 'natural'; // 'natural', 'asc', 'desc'
     let treeExpanded = false; // false = collapsed, true = expanded
+
+    // --- LocalStorage Keys ---
+    const STORAGE_KEYS = {
+        XML_CONTENT: 'xml_browser_xml_content',
+        XML_FILENAME: 'xml_browser_xml_filename',
+        TREE_SEARCH_TEXT: 'xml_browser_tree_search_text',
+        TREE_SEARCH_SCOPE: 'xml_browser_tree_search_scope',
+        TREE_SORT_STATE: 'xml_browser_tree_sort_state',
+        TREE_EXPANDED: 'xml_browser_tree_expanded',
+        SELECTED_NODE_PATH: 'xml_browser_selected_node_path',
+        DETAIL_SEARCH_TEXT: 'xml_browser_detail_search_text',
+        DETAIL_SEARCH_SCOPE: 'xml_browser_detail_search_scope',
+        DETAIL_SORT_STATE: 'xml_browser_detail_sort_state'
+    };
 
     // --- Event Listeners ---
     dropZone.addEventListener('click', () => fileInput.click());
@@ -590,6 +606,7 @@
         if (currentNode) {
             showNodeDetails(currentNode);
         }
+        saveStateToStorage();
     });
 
     document.querySelectorAll('input[name="search-scope"]').forEach(radio => {
@@ -598,6 +615,7 @@
             if (currentNode) {
                 showNodeDetails(currentNode);
             }
+            saveStateToStorage();
         });
     });
 
@@ -607,6 +625,7 @@
         if (xmlDoc) {
             renderTree(xmlDoc);
         }
+        saveStateToStorage();
     });
 
     document.querySelectorAll('input[name="tree-search-scope"]').forEach(radio => {
@@ -615,6 +634,7 @@
             if (xmlDoc) {
                 renderTree(xmlDoc);
             }
+            saveStateToStorage();
         });
     });
 
@@ -634,6 +654,7 @@
         if (xmlDoc) {
             renderTree(xmlDoc);
         }
+        saveStateToStorage();
     });
 
     treeToggleBtn.addEventListener('click', () => {
@@ -657,6 +678,7 @@
                 node.classList.remove('expanded');
             }
         });
+        saveStateToStorage();
     });
 
     // --- File Handling ---
@@ -671,9 +693,10 @@
         const reader = new FileReader();
         reader.onload = (e) => {
             const parser = new DOMParser();
+            const rawContent = e.target.result;
             
             // Step 1: Parse XML
-            const parsedDoc = parser.parseFromString(e.target.result, "text/xml");
+            const parsedDoc = parser.parseFromString(rawContent, "text/xml");
             
             // Step 2: Check for parser errors (handle namespaced parsererror)
             const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
@@ -691,8 +714,14 @@
                 return;
             }
             
-            // Store the parsed document
+            // Store the parsed document and raw content
             xmlDoc = parsedDoc;
+            xmlRawContent = rawContent;
+            xmlFilename = file.name;
+            
+            // Reset states for new file
+            currentNodePath = null;
+            currentNode = null;
             
             // Step 4: Render tree
             try {
@@ -710,6 +739,9 @@
                 console.error("Error resetting detail view:", err);
                 alert("重置详情面板错误: " + err.message);
             }
+            
+            // Save state to localStorage
+            saveStateToStorage();
         };
         
         reader.onerror = (err) => {
@@ -811,6 +843,9 @@
             if (hasChildren) {
                 li.classList.toggle('expanded');
             }
+            
+            // Save state to localStorage
+            saveStateToStorage();
         };
 
         li.appendChild(content);
@@ -1125,6 +1160,7 @@
             sortHeader.onclick = () => {
                 toggleSortState();
                 showNodeDetails(currentNode);
+                saveStateToStorage();
             };
         }
     }
@@ -1191,6 +1227,238 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
+
+    // --- LocalStorage Persistence ---
+    function saveStateToStorage() {
+        try {
+            // Save XML content and filename
+            if (xmlRawContent) {
+                localStorage.setItem(STORAGE_KEYS.XML_CONTENT, xmlRawContent);
+            }
+            if (xmlFilename) {
+                localStorage.setItem(STORAGE_KEYS.XML_FILENAME, xmlFilename);
+            }
+            
+            // Save tree panel states
+            localStorage.setItem(STORAGE_KEYS.TREE_SEARCH_TEXT, treeSearchText);
+            localStorage.setItem(STORAGE_KEYS.TREE_SEARCH_SCOPE, treeSearchScope);
+            localStorage.setItem(STORAGE_KEYS.TREE_SORT_STATE, treeSortState);
+            localStorage.setItem(STORAGE_KEYS.TREE_EXPANDED, JSON.stringify(treeExpanded));
+            
+            // Save selected node path
+            if (currentNodePath) {
+                localStorage.setItem(STORAGE_KEYS.SELECTED_NODE_PATH, currentNodePath);
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.SELECTED_NODE_PATH);
+            }
+            
+            // Save detail panel states
+            localStorage.setItem(STORAGE_KEYS.DETAIL_SEARCH_TEXT, searchText);
+            localStorage.setItem(STORAGE_KEYS.DETAIL_SEARCH_SCOPE, searchScope);
+            localStorage.setItem(STORAGE_KEYS.DETAIL_SORT_STATE, sortState);
+        } catch (e) {
+            console.warn('Failed to save state to localStorage:', e);
+            // localStorage might be full or disabled
+        }
+    }
+
+    function restoreStateFromStorage() {
+        try {
+            // Restore XML content
+            const savedXmlContent = localStorage.getItem(STORAGE_KEYS.XML_CONTENT);
+            const savedFilename = localStorage.getItem(STORAGE_KEYS.XML_FILENAME);
+            
+            // Restore tree panel states first (before rendering)
+            const savedTreeSearchText = localStorage.getItem(STORAGE_KEYS.TREE_SEARCH_TEXT);
+            const savedTreeSearchScope = localStorage.getItem(STORAGE_KEYS.TREE_SEARCH_SCOPE);
+            const savedTreeSortState = localStorage.getItem(STORAGE_KEYS.TREE_SORT_STATE);
+            const savedTreeExpanded = localStorage.getItem(STORAGE_KEYS.TREE_EXPANDED);
+            
+            // Restore detail panel states
+            const savedDetailSearchText = localStorage.getItem(STORAGE_KEYS.DETAIL_SEARCH_TEXT);
+            const savedDetailSearchScope = localStorage.getItem(STORAGE_KEYS.DETAIL_SEARCH_SCOPE);
+            const savedDetailSortState = localStorage.getItem(STORAGE_KEYS.DETAIL_SORT_STATE);
+            
+            // Restore selected node path
+            const savedNodePath = localStorage.getItem(STORAGE_KEYS.SELECTED_NODE_PATH);
+            
+            // Apply tree panel states
+            if (savedTreeSearchText !== null) {
+                treeSearchText = savedTreeSearchText;
+                treeSearchInput.value = savedTreeSearchText;
+            }
+            if (savedTreeSearchScope !== null) {
+                treeSearchScope = savedTreeSearchScope;
+                const treeRadio = document.querySelector(`input[name="tree-search-scope"][value="${savedTreeSearchScope}"]`);
+                if (treeRadio) treeRadio.checked = true;
+            }
+            if (savedTreeSortState !== null) {
+                treeSortState = savedTreeSortState;
+                // Update sort icon
+                if (treeSortState === 'asc') {
+                    treeSortIcon.textContent = '▲';
+                } else if (treeSortState === 'desc') {
+                    treeSortIcon.textContent = '▼';
+                } else {
+                    treeSortIcon.textContent = '↕';
+                }
+            }
+            if (savedTreeExpanded !== null) {
+                treeExpanded = JSON.parse(savedTreeExpanded);
+                // Update toggle button
+                if (treeExpanded) {
+                    treeToggleIcon.textContent = '⊟';
+                    treeToggleText.textContent = '折叠';
+                } else {
+                    treeToggleIcon.textContent = '⊞';
+                    treeToggleText.textContent = '展开';
+                }
+            }
+            
+            // Apply detail panel states
+            if (savedDetailSearchText !== null) {
+                searchText = savedDetailSearchText;
+                searchInput.value = savedDetailSearchText;
+            }
+            if (savedDetailSearchScope !== null) {
+                searchScope = savedDetailSearchScope;
+                const detailRadio = document.querySelector(`input[name="search-scope"][value="${savedDetailSearchScope}"]`);
+                if (detailRadio) detailRadio.checked = true;
+            }
+            if (savedDetailSortState !== null) {
+                sortState = savedDetailSortState;
+            }
+            
+            // Restore selected node path (will be used when tree is rendered)
+            if (savedNodePath !== null) {
+                currentNodePath = savedNodePath;
+            }
+            
+            // If we have saved XML content, parse and render it
+            if (savedXmlContent) {
+                xmlRawContent = savedXmlContent;
+                xmlFilename = savedFilename || 'Restored file';
+                
+                // Update drop zone text
+                dropZone.textContent = `File: ${xmlFilename}`;
+                
+                // Parse the XML
+                const parser = new DOMParser();
+                const parsedDoc = parser.parseFromString(savedXmlContent, "text/xml");
+                
+                // Check for parser errors
+                const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
+                                    parsedDoc.querySelector("parsererror");
+                if (parserError) {
+                    console.warn("Failed to restore XML from localStorage - parse error");
+                    clearStoredState();
+                    return;
+                }
+                
+                // Check if we have a valid document element
+                if (!parsedDoc.documentElement || parsedDoc.documentElement.nodeName === "html") {
+                    console.warn("Failed to restore XML from localStorage - invalid structure");
+                    clearStoredState();
+                    return;
+                }
+                
+                // Store and render
+                xmlDoc = parsedDoc;
+                renderTree(xmlDoc);
+                
+                // Apply expand/collapse state to all nodes after rendering
+                if (treeExpanded) {
+                    const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+                    treeNodes.forEach(node => {
+                        node.classList.add('expanded');
+                    });
+                }
+                
+                // Restore selected node and show its details
+                if (currentNodePath && xmlDoc) {
+                    const xmlNode = findXmlNodeByPath(xmlDoc, currentNodePath);
+                    if (xmlNode) {
+                        currentNode = xmlNode;
+                        showNodeDetails(xmlNode);
+                        
+                        // Also highlight the node in the tree
+                        setTimeout(() => {
+                            restoreNodeSelection(currentNodePath);
+                            // Highlight parent path
+                            highlightParentPath(currentNodePath);
+                        }, 0);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to restore state from localStorage:', e);
+        }
+    }
+
+    function clearStoredState() {
+        Object.values(STORAGE_KEYS).forEach(key => {
+            localStorage.removeItem(key);
+        });
+    }
+
+    // Find XML node by path (e.g., "root.parent.child")
+    function findXmlNodeByPath(doc, path) {
+        if (!path || !doc) return null;
+        
+        const parts = path.split('.');
+        let current = doc.documentElement;
+        
+        // First part should be the root element
+        if (parts[0] !== current.nodeName) return null;
+        
+        // Traverse the path
+        for (let i = 1; i < parts.length; i++) {
+            const targetName = parts[i];
+            let found = false;
+            
+            for (let child of current.children) {
+                if (child.nodeName === targetName) {
+                    current = child;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) return null;
+        }
+        
+        return current;
+    }
+
+    // Highlight parent path in tree after restore
+    function highlightParentPath(path) {
+        if (!path) return;
+        
+        const treeNodes = treeContainer.querySelectorAll('.tree-node');
+        const parts = path.split('.');
+        
+        // Build all parent paths
+        const parentPaths = [];
+        for (let i = 1; i < parts.length; i++) {
+            parentPaths.push(parts.slice(0, i).join('.'));
+        }
+        
+        // Highlight parent nodes and expand them
+        treeNodes.forEach(treeNode => {
+            const nodePath = treeNode.dataset.nodePath;
+            if (parentPaths.includes(nodePath)) {
+                const content = treeNode.querySelector(':scope > .tree-content');
+                if (content) {
+                    content.classList.add('parent-path');
+                }
+                // Ensure parent is expanded
+                treeNode.classList.add('expanded');
+            }
+        });
+    }
+
+    // --- Initialize: Restore state on page load ---
+    restoreStateFromStorage();
 </script>
 
 </body>
