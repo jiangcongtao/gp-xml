@@ -418,6 +418,186 @@
             white-space: normal;
         }
 
+        /* Help Upload Button */
+        .help-upload-wrapper {
+            display: flex;
+            align-items: center;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .help-upload-wrapper.dragover {
+            transform: scale(1.02);
+        }
+
+        .help-upload-wrapper.dragover .help-upload-btn {
+            border-color: var(--primary-color);
+            border-style: dashed;
+            background-color: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .help-upload-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            max-width: 280px;
+        }
+
+        .help-upload-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: var(--hover-color);
+        }
+
+        .help-upload-btn.loaded {
+            border-color: #10b981;
+            color: #10b981;
+            background-color: #ecfdf5;
+        }
+
+        .help-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        #help-status-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Tooltip Styles */
+        .help-tooltip {
+            position: fixed;
+            z-index: 10000;
+            max-width: 320px;
+            padding: 0;
+            background: #1f2937;
+            color: #f9fafb;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .help-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .help-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: var(--arrow-left, 20px);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid #374151;
+        }
+
+        .help-tooltip.above::before {
+            top: auto;
+            bottom: -6px;
+            border-bottom: none;
+            border-top: 6px solid #1f2937;
+        }
+
+        .help-tooltip-header {
+            padding: 0.75rem 1rem;
+            background: #374151;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            color: #60a5fa;
+            border-bottom: 1px solid #4b5563;
+        }
+
+        .help-tooltip-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .help-tooltip-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-tooltip-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-tooltip-label {
+            flex-shrink: 0;
+            width: 60px;
+            color: #9ca3af;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .help-tooltip-value {
+            flex: 1;
+            color: #f3f4f6;
+        }
+
+        .help-tooltip-desc {
+            color: #e5e7eb;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #374151;
+        }
+
+        .help-tooltip-example {
+            background: #374151;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            color: #fbbf24;
+        }
+
+        /* Hoverable elements with help */
+        .has-help {
+            cursor: help;
+            position: relative;
+        }
+
+        .has-help::after {
+            content: '?';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            background: #e5e7eb;
+            color: #6b7280;
+            border-radius: 50%;
+            font-size: 0.65rem;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .tree-content .has-help::after {
+            display: none;
+        }
+
+        .tree-content:hover .has-help::after {
+            display: inline-flex;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             main {
@@ -428,6 +608,9 @@
                 height: 40%;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
+            }
+            .help-upload-btn span:not(.help-icon) {
+                display: none;
             }
         }
     </style>
@@ -440,7 +623,20 @@
         Drag & Drop XML file here or Click to Upload
     </div>
     <input type="file" id="file-input" accept=".xml" style="display: none;">
+    <div class="help-upload-wrapper" id="help-drop-zone">
+        <button id="help-upload-btn" class="help-upload-btn">
+            <span class="help-icon">📖</span>
+            <span id="help-status-text">加载帮助配置</span>
+        </button>
+        <input type="file" id="help-file-input" accept=".json" style="display: none;">
+    </div>
 </header>
+
+<!-- Help Tooltip Element -->
+<div id="help-tooltip" class="help-tooltip">
+    <div class="help-tooltip-header" id="tooltip-header"></div>
+    <div class="help-tooltip-body" id="tooltip-body"></div>
+</div>
 
 <main>
     <div id="tree-panel">
@@ -546,6 +742,15 @@
     const searchBar = document.getElementById('search-bar');
     const searchInput = document.getElementById('search-input');
     const searchInfo = document.getElementById('search-info');
+    
+    // Help schema elements
+    const helpUploadBtn = document.getElementById('help-upload-btn');
+    const helpFileInput = document.getElementById('help-file-input');
+    const helpStatusText = document.getElementById('help-status-text');
+    const helpTooltip = document.getElementById('help-tooltip');
+    const tooltipHeader = document.getElementById('tooltip-header');
+    const tooltipBody = document.getElementById('tooltip-body');
+    
     let xmlDoc = null;
     let xmlRawContent = null; // Store raw XML string for localStorage persistence
     let xmlFilename = null; // Store filename for display after restore
@@ -559,6 +764,14 @@
     let treeSearchScope = 'both'; // 'name', 'value', 'both'
     let treeSortState = 'natural'; // 'natural', 'asc', 'desc'
     let treeExpanded = false; // false = collapsed, true = expanded
+    
+    // Help schema state
+    let helpSchema = null; // Parsed help schema
+    let helpSchemaRaw = null; // Raw JSON string for persistence
+    let helpSchemaFilename = null; // Help schema filename
+    
+    // Help drop zone element
+    const helpDropZone = document.getElementById('help-drop-zone');
 
     // --- LocalStorage Keys ---
     const STORAGE_KEYS = {
@@ -571,7 +784,9 @@
         SELECTED_NODE_PATH: 'xml_browser_selected_node_path',
         DETAIL_SEARCH_TEXT: 'xml_browser_detail_search_text',
         DETAIL_SEARCH_SCOPE: 'xml_browser_detail_search_scope',
-        DETAIL_SORT_STATE: 'xml_browser_detail_sort_state'
+        DETAIL_SORT_STATE: 'xml_browser_detail_sort_state',
+        HELP_SCHEMA: 'xml_browser_help_schema',
+        HELP_SCHEMA_FILENAME: 'xml_browser_help_schema_filename'
     };
 
     // --- Event Listeners ---
@@ -597,6 +812,43 @@
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length) {
             handleFile(e.target.files[0]);
+        }
+    });
+
+    // --- Help Schema Upload Event Listeners ---
+    helpUploadBtn.addEventListener('click', () => helpFileInput.click());
+    
+    helpFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleHelpSchemaFile(e.target.files[0]);
+        }
+    });
+    
+    // Help schema drag and drop
+    helpDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        helpDropZone.classList.add('dragover');
+    });
+    
+    helpDropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        helpDropZone.classList.remove('dragover');
+    });
+    
+    helpDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        helpDropZone.classList.remove('dragover');
+        
+        if (e.dataTransfer.files.length) {
+            const file = e.dataTransfer.files[0];
+            if (file.name.endsWith('.json')) {
+                handleHelpSchemaFile(file);
+            } else {
+                alert('请上传 JSON 格式的帮助配置文件');
+            }
         }
     });
 
@@ -752,6 +1004,265 @@
         reader.readAsText(file);
     }
 
+    // --- Help Schema Handling ---
+    function handleHelpSchemaFile(file) {
+        if (!file.name.endsWith('.json')) {
+            alert('请上传 JSON 格式的帮助配置文件');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const rawContent = e.target.result;
+                const parsed = JSON.parse(rawContent);
+                
+                // Validate basic structure
+                if (!parsed.definitions && !parsed.paths) {
+                    alert('帮助配置文件格式无效：缺少 definitions 或 paths');
+                    return;
+                }
+                
+                // Process the schema (resolve $ref references)
+                helpSchema = processHelpSchema(parsed);
+                helpSchemaRaw = rawContent;
+                helpSchemaFilename = file.name;
+                
+                // Update UI
+                helpUploadBtn.classList.add('loaded');
+                helpStatusText.textContent = file.name;
+                helpStatusText.title = file.name; // Show full name on hover
+                
+                // Re-render tree and details to apply help
+                if (xmlDoc) {
+                    renderTree(xmlDoc);
+                    if (currentNode) {
+                        showNodeDetails(currentNode);
+                    }
+                }
+                
+                // Save to localStorage
+                saveStateToStorage();
+                
+            } catch (err) {
+                console.error('Help schema parse error:', err);
+                alert('帮助配置文件解析错误: ' + err.message);
+            }
+        };
+        
+        reader.onerror = () => {
+            alert('读取帮助配置文件失败');
+        };
+        
+        reader.readAsText(file);
+    }
+
+    // Process help schema and resolve $ref references
+    function processHelpSchema(schema) {
+        const processed = {
+            definitions: schema.definitions || {},
+            paths: {},
+            wildcardPaths: [] // Store wildcard patterns for matching
+        };
+        
+        // Process paths and resolve $ref
+        if (schema.paths) {
+            for (const [path, value] of Object.entries(schema.paths)) {
+                const resolved = resolveRef(value, schema);
+                
+                if (path.includes('**')) {
+                    // Store wildcard patterns separately
+                    processed.wildcardPaths.push({
+                        pattern: path,
+                        regex: wildcardToRegex(path),
+                        help: resolved
+                    });
+                } else {
+                    processed.paths[path] = resolved;
+                }
+            }
+        }
+        
+        return processed;
+    }
+
+    // Resolve $ref references in help schema
+    function resolveRef(value, schema) {
+        if (!value || typeof value !== 'object') {
+            return value;
+        }
+        
+        if (value.$ref) {
+            // Parse $ref path like "#/definitions/Hotel_Code"
+            const refPath = value.$ref;
+            if (refPath.startsWith('#/definitions/')) {
+                const defName = refPath.substring('#/definitions/'.length);
+                if (schema.definitions && schema.definitions[defName]) {
+                    return { ...schema.definitions[defName] };
+                }
+            }
+            return null;
+        }
+        
+        return value;
+    }
+
+    // Convert wildcard pattern to regex
+    function wildcardToRegex(pattern) {
+        // ** matches any number of path segments
+        // * matches single path segment
+        const escaped = pattern
+            .replace(/\./g, '\\.')
+            .replace(/\*\*/g, '##DOUBLE##')
+            .replace(/\*/g, '[^.]+')
+            .replace(/##DOUBLE##/g, '.*');
+        return new RegExp('^' + escaped + '$');
+    }
+
+    // Find help content for a given path or tag name
+    function findHelpContent(path, tagName) {
+        if (!helpSchema) return null;
+        
+        // 1. Try exact path match
+        if (helpSchema.paths[path]) {
+            return helpSchema.paths[path];
+        }
+        
+        // 2. Try wildcard path match
+        for (const wp of helpSchema.wildcardPaths) {
+            if (wp.regex.test(path)) {
+                return wp.help;
+            }
+        }
+        
+        // 3. Try tag name match in definitions
+        if (helpSchema.definitions[tagName]) {
+            return helpSchema.definitions[tagName];
+        }
+        
+        // 4. Try tag name without @ prefix (for attributes)
+        if (tagName.startsWith('@')) {
+            const attrName = tagName.substring(1);
+            if (helpSchema.definitions[attrName]) {
+                return helpSchema.definitions[attrName];
+            }
+        }
+        
+        return null;
+    }
+
+    // --- Tooltip Functions ---
+    let tooltipTimeout = null;
+    
+    function showTooltip(element, helpContent, nodePath) {
+        if (!helpContent) return;
+        
+        // Clear any pending hide
+        if (tooltipTimeout) {
+            clearTimeout(tooltipTimeout);
+            tooltipTimeout = null;
+        }
+        
+        // Build tooltip content
+        tooltipHeader.textContent = nodePath || '';
+        
+        let bodyHtml = '';
+        
+        if (helpContent.description) {
+            bodyHtml += `<div class="help-tooltip-desc">${escapeHtml(helpContent.description)}</div>`;
+        }
+        
+        if (helpContent.type) {
+            bodyHtml += `
+                <div class="help-tooltip-row">
+                    <span class="help-tooltip-label">类型</span>
+                    <span class="help-tooltip-value">${escapeHtml(helpContent.type)}</span>
+                </div>`;
+        }
+        
+        if (helpContent.format) {
+            bodyHtml += `
+                <div class="help-tooltip-row">
+                    <span class="help-tooltip-label">格式</span>
+                    <span class="help-tooltip-value">${escapeHtml(helpContent.format)}</span>
+                </div>`;
+        }
+        
+        if (helpContent.example !== undefined) {
+            bodyHtml += `
+                <div class="help-tooltip-row">
+                    <span class="help-tooltip-label">示例</span>
+                    <span class="help-tooltip-value"><code class="help-tooltip-example">${escapeHtml(String(helpContent.example))}</code></span>
+                </div>`;
+        }
+        
+        if (helpContent.required !== undefined) {
+            bodyHtml += `
+                <div class="help-tooltip-row">
+                    <span class="help-tooltip-label">必填</span>
+                    <span class="help-tooltip-value">${helpContent.required ? '是' : '否'}</span>
+                </div>`;
+        }
+        
+        tooltipBody.innerHTML = bodyHtml;
+        
+        // Position tooltip near the element (below and slightly to the right)
+        const rect = element.getBoundingClientRect();
+        
+        // Show tooltip below the element, aligned to its left edge
+        let left = rect.left;
+        let top = rect.bottom + 8;
+        
+        // Make tooltip visible temporarily to measure its size
+        helpTooltip.style.visibility = 'hidden';
+        helpTooltip.style.display = 'block';
+        const tooltipWidth = helpTooltip.offsetWidth;
+        const tooltipHeight = helpTooltip.offsetHeight;
+        helpTooltip.style.visibility = '';
+        helpTooltip.style.display = '';
+        
+        // Adjust if tooltip would go off right edge of screen
+        if (left + tooltipWidth > window.innerWidth - 10) {
+            left = window.innerWidth - tooltipWidth - 10;
+        }
+        
+        // Adjust if tooltip would go off left edge
+        if (left < 10) {
+            left = 10;
+        }
+        
+        // Track if we're showing above or below
+        let showAbove = false;
+        
+        // If tooltip would go off bottom, show it above the element instead
+        if (top + tooltipHeight > window.innerHeight - 10) {
+            top = rect.top - tooltipHeight - 8;
+            showAbove = true;
+        }
+        
+        // If still off top, just position at top of screen
+        if (top < 10) {
+            top = 10;
+            showAbove = false;
+        }
+        
+        // Calculate arrow position to point at element center
+        const arrowLeft = Math.max(12, Math.min(rect.left + rect.width / 2 - left - 6, tooltipWidth - 24));
+        helpTooltip.style.setProperty('--arrow-left', arrowLeft + 'px');
+        
+        helpTooltip.style.left = left + 'px';
+        helpTooltip.style.top = top + 'px';
+        helpTooltip.classList.toggle('above', showAbove);
+        helpTooltip.classList.add('visible');
+    }
+    
+    function hideTooltip() {
+        tooltipTimeout = setTimeout(() => {
+            helpTooltip.classList.remove('visible');
+            helpTooltip.classList.remove('above');
+        }, 100);
+    }
+
     // --- Tree Rendering ---
     function renderTree(doc) {
         try {
@@ -804,6 +1315,18 @@
         const title = document.createElement('span');
         title.className = 'tag-name';
         title.textContent = xmlNode.nodeName;
+        
+        // Add help indicator if help content exists
+        const nodePath = getNodePath(xmlNode);
+        const helpContent = findHelpContent(nodePath, xmlNode.nodeName);
+        if (helpContent) {
+            title.classList.add('has-help');
+            title.addEventListener('mouseenter', (e) => {
+                showTooltip(title, helpContent, nodePath);
+            });
+            title.addEventListener('mouseleave', hideTooltip);
+        }
+        
         content.appendChild(title);
 
         // Click Handler: Selection & Toggling
@@ -1136,10 +1659,13 @@
                 </tr>
             `;
         } else {
-            sortedData.forEach(item => {
+            sortedData.forEach((item, index) => {
+                const itemPath = path + '.' + item.name.replace(/^@/, '');
+                const itemHelp = findHelpContent(itemPath, item.name);
+                const hasHelpClass = itemHelp ? 'has-help' : '';
                 html += `
                     <tr>
-                        <td class="attr-name">${escapeHtml(item.name)}</td>
+                        <td class="attr-name ${hasHelpClass}" data-item-index="${index}" data-item-name="${escapeHtml(item.name)}" data-item-path="${escapeHtml(itemPath)}">${escapeHtml(item.name)}</td>
                         <td class="attr-value">${escapeHtml(item.value)}</td>
                     </tr>
                 `;
@@ -1163,6 +1689,21 @@
                 saveStateToStorage();
             };
         }
+        
+        // Add hover handlers for help tooltips on attribute names
+        const attrNameCells = detailContent.querySelectorAll('td.attr-name.has-help');
+        attrNameCells.forEach(cell => {
+            const itemName = cell.dataset.itemName;
+            const itemPath = cell.dataset.itemPath;
+            const itemHelp = findHelpContent(itemPath, itemName);
+            
+            if (itemHelp) {
+                cell.addEventListener('mouseenter', () => {
+                    showTooltip(cell, itemHelp, itemName);
+                });
+                cell.addEventListener('mouseleave', hideTooltip);
+            }
+        });
     }
 
     function updateSearchInfo(filtered, total) {
@@ -1256,6 +1797,14 @@
             localStorage.setItem(STORAGE_KEYS.DETAIL_SEARCH_TEXT, searchText);
             localStorage.setItem(STORAGE_KEYS.DETAIL_SEARCH_SCOPE, searchScope);
             localStorage.setItem(STORAGE_KEYS.DETAIL_SORT_STATE, sortState);
+            
+            // Save help schema
+            if (helpSchemaRaw) {
+                localStorage.setItem(STORAGE_KEYS.HELP_SCHEMA, helpSchemaRaw);
+            }
+            if (helpSchemaFilename) {
+                localStorage.setItem(STORAGE_KEYS.HELP_SCHEMA_FILENAME, helpSchemaFilename);
+            }
         } catch (e) {
             console.warn('Failed to save state to localStorage:', e);
             // localStorage might be full or disabled
@@ -1264,6 +1813,25 @@
 
     function restoreStateFromStorage() {
         try {
+            // Restore help schema first (before rendering)
+            const savedHelpSchema = localStorage.getItem(STORAGE_KEYS.HELP_SCHEMA);
+            const savedHelpSchemaFilename = localStorage.getItem(STORAGE_KEYS.HELP_SCHEMA_FILENAME);
+            if (savedHelpSchema) {
+                try {
+                    const parsed = JSON.parse(savedHelpSchema);
+                    helpSchema = processHelpSchema(parsed);
+                    helpSchemaRaw = savedHelpSchema;
+                    helpSchemaFilename = savedHelpSchemaFilename || 'help-schema.json';
+                    
+                    // Update UI
+                    helpUploadBtn.classList.add('loaded');
+                    helpStatusText.textContent = helpSchemaFilename;
+                    helpStatusText.title = helpSchemaFilename;
+                } catch (e) {
+                    console.warn('Failed to restore help schema:', e);
+                }
+            }
+            
             // Restore XML content
             const savedXmlContent = localStorage.getItem(STORAGE_KEYS.XML_CONTENT);
             const savedFilename = localStorage.getItem(STORAGE_KEYS.XML_FILENAME);

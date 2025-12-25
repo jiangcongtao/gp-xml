@@ -1,0 +1,37 @@
+{
+    "version": "1.0",
+    "definitions": {
+        "Hotel_Code": {
+            "description": "酒店唯一标识码，由5位大写字母组成",
+            "type": "string",
+            "format": "^[A-Z]{5}$",
+            "example": "CTUHX",
+            "required": true
+        },
+        "Hotel_Name": {
+            "description": "酒店名称",
+            "type": "string"
+        },
+        "Business_Date": {
+            "description": "营业日期",
+            "type": "date",
+            "format": "YYYY-MM-DD"
+        },
+        "confirmation_num": {
+            "description": "希尔顿订单号",
+            "type": "integer",
+            "example": 1234567890
+        }
+    },
+    "paths": {
+        "System21.Hotel_Code": {
+            "$ref": "#/definitions/Hotel_Code"
+        },
+        "**.Hotel_Code": {
+            "$ref": "#/definitions/Hotel_Code"
+        },
+        "**.confirmation_num": {
+            "$ref": "#/definitions/confirmation_num"
+        }
+    }
+}
