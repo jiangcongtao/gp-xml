@@ -1,0 +1,3463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern XML Browser</title>
+    <!-- Monaco Editor (VS Code 的编辑器) - 本地资源 -->
+    <script src="monaco/vs/loader.js"></script>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --bg-color: #f3f4f6;
+            --panel-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --hover-color: #eff6ff;
+            --selected-bg: #dbeafe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header & Upload Area */
+        header {
+            background: var(--panel-bg);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        #drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1.5rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        #drop-zone.dragover {
+            border-color: var(--primary-color);
+            background-color: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        /* Main Layout */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* Left Panel: Tree View */
+        #tree-panel {
+            width: 350px;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 1rem;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tree-node {
+            cursor: pointer;
+            padding: 4px 0;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .tree-content {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .tree-content:hover {
+            background-color: var(--hover-color);
+        }
+
+        .tree-content.selected {
+            background-color: var(--selected-bg);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .tree-content.parent-path {
+            background-color: #f0f7ff;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 5px;
+        }
+
+        .toggle-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #9ca3af;
+            transition: transform 0.2s;
+        }
+
+        .expanded > .tree-content > .toggle-icon {
+            transform: rotate(90deg);
+        }
+
+        .leaf-node .toggle-icon {
+            visibility: hidden;
+        }
+
+        .node-children {
+            padding-left: 20px;
+            display: none;
+            border-left: 1px solid #f0f0f0;
+            margin-left: 7px;
+        }
+
+        .expanded > .node-children {
+            display: block;
+        }
+
+        .tag-name {
+            margin-right: 8px;
+        }
+
+        /* Tree Panel Controls */
+        .tree-controls {
+            background: var(--panel-bg);
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            display: none;
+            flex-shrink: 0;
+            margin: -1rem -1rem 1rem -1rem;
+        }
+
+        .tree-controls.visible {
+            display: block;
+        }
+
+        .tree-search-wrapper {
+            margin-bottom: 0.5rem;
+        }
+
+        .tree-search-wrapper input {
+            width: 100%;
+            padding: 0.4rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .tree-search-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .tree-options {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 0.75rem;
+        }
+
+        .tree-scope-group {
+            display: flex;
+            gap: 0.4rem;
+            flex: 1;
+        }
+
+        .tree-scope-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .tree-scope-group input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .tree-sort-btn {
+            padding: 0.3rem 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: #6b7280;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        .tree-sort-btn:hover {
+            background-color: var(--hover-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tree-sort-icon {
+            font-size: 0.7rem;
+        }
+
+        .tree-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Right Panel: Detail View */
+        #detail-panel {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Search Filter Bar */
+        .search-filter-bar {
+            background: var(--panel-bg);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: none; /* Hidden by default */
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .search-filter-bar.visible {
+            display: block;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .search-input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-scope {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-scope label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .search-scope input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .search-info {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .detail-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        .detail-card {
+            background: var(--panel-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fff;
+        }
+
+        .card-header h2 {
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .path-breadcrumb {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s;
+        }
+
+        th.sortable:hover {
+            background-color: #e2e8f0;
+        }
+
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td.attr-name {
+            font-weight: 500;
+            color: var(--primary-color);
+            width: 30%;
+        }
+
+        td.attr-value {
+            color: #4b5563;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        /* Help Upload Button */
+        .help-upload-wrapper {
+            display: flex;
+            align-items: center;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .help-upload-wrapper.dragover {
+            transform: scale(1.02);
+        }
+
+        .help-upload-wrapper.dragover .help-upload-btn {
+            border-color: var(--primary-color);
+            border-style: dashed;
+            background-color: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .help-upload-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            max-width: 280px;
+        }
+
+        .help-upload-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: var(--hover-color);
+        }
+
+        .help-upload-btn.loaded {
+            border-color: #10b981;
+            color: #10b981;
+            background-color: #ecfdf5;
+        }
+
+        .help-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        #help-status-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Tooltip Styles */
+        .help-tooltip {
+            position: fixed;
+            z-index: 10000;
+            max-width: 320px;
+            padding: 0;
+            background: #1f2937;
+            color: #f9fafb;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .help-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .help-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: var(--arrow-left, 20px);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid #374151;
+        }
+
+        .help-tooltip.above::before {
+            top: auto;
+            bottom: -6px;
+            border-bottom: none;
+            border-top: 6px solid #1f2937;
+        }
+
+        .help-tooltip-header {
+            padding: 0.75rem 1rem;
+            background: #374151;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            color: #60a5fa;
+            border-bottom: 1px solid #4b5563;
+        }
+
+        .help-tooltip-error {
+            padding: 0.75rem 1rem;
+            background: #991b1b;
+            color: #fef2f2;
+            border-bottom: 1px solid #7f1d1d;
+        }
+
+        .help-tooltip-error:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .help-tooltip-error-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .help-tooltip-error-title::before {
+            content: '⚠️';
+        }
+
+        .help-tooltip-error-list {
+            margin: 0;
+            padding-left: 1.2rem;
+            font-size: 0.8rem;
+        }
+
+        .help-tooltip-error-list li {
+            margin-bottom: 0.25rem;
+        }
+
+        .help-tooltip-error-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-tooltip-error + .help-tooltip-header {
+            border-radius: 0;
+        }
+
+        .help-tooltip-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .help-tooltip-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-tooltip-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .help-tooltip-label {
+            flex-shrink: 0;
+            width: 60px;
+            color: #9ca3af;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .help-tooltip-value {
+            flex: 1;
+            color: #f3f4f6;
+        }
+
+        .help-tooltip-desc {
+            color: #e5e7eb;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #374151;
+        }
+
+        .help-tooltip-example {
+            background: #374151;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            color: #fbbf24;
+        }
+
+        /* Hoverable elements with help */
+        .has-help {
+            cursor: help;
+            position: relative;
+        }
+
+        .has-help::after {
+            content: '?';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            background: #e5e7eb;
+            color: #6b7280;
+            border-radius: 50%;
+            font-size: 0.65rem;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .tree-content .has-help::after {
+            display: none;
+        }
+
+        .tree-content:hover .has-help::after {
+            display: inline-flex;
+        }
+
+        /* Validation Error Styles */
+        .validation-error {
+            color: #dc2626 !important;
+        }
+
+        .validation-error::before {
+            content: '⚠';
+            margin-right: 4px;
+            font-size: 0.85em;
+        }
+
+        .tree-content .validation-error::before {
+            display: none;
+        }
+
+        .tree-content:hover .validation-error::before {
+            display: inline;
+        }
+
+        td.attr-name.validation-error {
+            color: #dc2626 !important;
+        }
+
+        td.attr-value.validation-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-left: 3px solid #dc2626;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+            #tree-panel {
+                width: 100%;
+                height: 40%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .help-upload-btn span:not(.help-icon) {
+                display: none;
+            }
+        }
+
+        /* ==================== */
+        /* View Tabs Styles     */
+        /* ==================== */
+        .view-tabs {
+            display: flex;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .view-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            margin-bottom: -1px;
+        }
+
+        .view-tab:hover {
+            color: var(--primary-color);
+            background-color: var(--hover-color);
+        }
+
+        .view-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background-color: transparent;
+        }
+
+        .tab-icon {
+            font-size: 1rem;
+        }
+
+        /* View Container */
+        .view-container {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .view-container.active {
+            display: flex;
+        }
+
+        /* Tree View Container (inherits existing main flex layout) */
+        #tree-view-container {
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ==================== */
+        /* XML View Styles      */
+        /* ==================== */
+        #xml-view-container {
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .xml-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .xml-toolbar-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #6b7280;
+            transition: all 0.15s;
+        }
+
+        .xml-toolbar-btn:hover {
+            background-color: var(--hover-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .xml-toolbar-btn .btn-icon {
+            font-size: 0.75rem;
+        }
+
+        .xml-info {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .xml-content {
+            flex: 1;
+            overflow: hidden;
+            margin: 0 1rem;
+            background: #1e1e1e;
+            padding: 1rem 1.5rem;
+            position: relative;
+        }
+
+        .xml-content pre {
+            padding: 1.5rem;
+            font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            min-height: 100%;
+            background: transparent !important;
+        }
+
+        .xml-content code {
+            font-family: inherit;
+            background: transparent !important;
+        }
+
+        /* CodeMirror 6 Styling */
+        .cm-editor {
+            height: 100%;
+            font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
+            font-size: 0.875rem;
+        }
+
+        .cm-scroller {
+            overflow: auto;
+        }
+
+        .cm-content {
+            padding: 1rem 0;
+        }
+
+        .cm-line {
+            padding: 0 0.5rem;
+        }
+
+        /* XML Folding */
+        .xml-fold-wrapper {
+            position: relative;
+        }
+
+        .xml-fold-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            background: #4b5563;
+            color: #e5e7eb;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-family: monospace;
+            line-height: 1;
+            vertical-align: middle;
+            transition: all 0.15s;
+        }
+
+        .xml-fold-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .xml-fold-content {
+            display: inline;
+        }
+
+        .xml-fold-content.collapsed {
+            display: none;
+        }
+
+        .xml-fold-placeholder {
+            display: none;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .xml-fold-content.collapsed + .xml-fold-placeholder {
+            display: inline;
+        }
+
+        /* XML Empty State */
+        .xml-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            text-align: center;
+            background: #f9fafb;
+        }
+
+        .xml-empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive for View Tabs */
+        @media (max-width: 768px) {
+            .view-tabs {
+                padding: 0 1rem;
+            }
+            
+            .view-tab {
+                padding: 0.75rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .view-tab span:not(.tab-icon) {
+                display: none;
+            }
+            
+            #tree-view-container {
+                flex-direction: column;
+            }
+            
+            .xml-toolbar {
+                padding: 0.5rem 1rem;
+                flex-wrap: wrap;
+            }
+            
+            .xml-content pre {
+                padding: 1rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>XML Browser</h1>
+    <div id="drop-zone">
+        DRAG & DROP XML FILE HERE OR CLICK TO UPLOAD
+    </div>
+    <input type="file" id="file-input" accept=".xml" style="display: none;">
+    <div class="help-upload-wrapper" id="help-drop-zone">
+        <button id="help-upload-btn" class="help-upload-btn">
+            <span class="help-icon">📖</span>
+            <span id="help-status-text">加载帮助配置</span>
+        </button>
+        <input type="file" id="help-file-input" accept=".json" style="display: none;">
+    </div>
+</header>
+
+<!-- View Tabs -->
+<div class="view-tabs">
+    <button class="view-tab active" data-view="tree">
+        <span class="tab-icon">🌲</span>
+        <span>TREE VIEW</span>
+    </button>
+    <button class="view-tab" data-view="xml">
+        <span class="tab-icon">📄</span>
+        <span>XML VIEW</span>
+    </button>
+</div>
+
+<!-- Help Tooltip Element (also shows validation errors) -->
+<div id="help-tooltip" class="help-tooltip"></div>
+
+<main>
+    <!-- Tree View Container -->
+    <div id="tree-view-container" class="view-container active">
+    <div id="tree-panel">
+        <!-- Tree Controls (hidden by default) -->
+        <div class="tree-controls" id="tree-controls">
+            <div class="tree-search-wrapper">
+                <input 
+                    type="text" 
+                    id="tree-search-input" 
+                    placeholder="搜索节点名称或值..."
+                />
+            </div>
+            <div class="tree-options">
+                <div class="tree-scope-group">
+                    <label>
+                        <input type="radio" name="tree-search-scope" value="name" />
+                        名称
+                    </label>
+                    <label>
+                        <input type="radio" name="tree-search-scope" value="value" />
+                        值
+                    </label>
+                    <label>
+                        <input type="radio" name="tree-search-scope" value="both" checked />
+                        全部
+                    </label>
+                </div>
+                <button class="tree-sort-btn" id="tree-sort-btn">
+                    <span class="tree-sort-icon" id="tree-sort-icon">↕</span>
+                    <span>排序</span>
+                </button>
+                <button class="tree-sort-btn" id="tree-toggle-btn">
+                    <span class="tree-sort-icon" id="tree-toggle-icon">⊞</span>
+                    <span id="tree-toggle-text">展开</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tree Container -->
+        <div class="tree-container" id="tree-container">
+            <div class="empty-state" style="height: auto; padding-top: 2rem;">
+                NO FILE LOADED.
+            </div>
+        </div>
+    </div>
+    
+    <div id="detail-panel">
+        <!-- Search Filter Bar (hidden by default) -->
+        <div class="search-filter-bar" id="search-bar">
+            <div class="search-controls">
+                <div class="search-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="搜索 Property/Tag 或 Value..."
+                    />
+                </div>
+                <div class="search-scope">
+                    <label>
+                        <input type="radio" name="search-scope" value="property" />
+                        仅 Property/Tag
+                    </label>
+                    <label>
+                        <input type="radio" name="search-scope" value="value" />
+                        仅 Value
+                    </label>
+                    <label>
+                        <input type="radio" name="search-scope" value="both" checked />
+                        Property/Tag 或 Value
+                    </label>
+                </div>
+            </div>
+            <div class="search-info" id="search-info"></div>
+        </div>
+        
+        <!-- Detail Content -->
+        <div class="detail-content" id="detail-content">
+            <div class="empty-state">
+                <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p>SELECT A NODE FROM THE TREE TO VIEW DETAILS</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- End Tree View Container -->
+    
+    <!-- XML View Container -->
+    <div id="xml-view-container" class="view-container">
+        <div class="xml-toolbar">
+            <button class="xml-toolbar-btn" id="xml-fold-all">
+                <span class="btn-icon">▼</span>
+                <span>折叠全部</span>
+            </button>
+            <button class="xml-toolbar-btn" id="xml-unfold-all">
+                <span class="btn-icon">▶</span>
+                <span>展开全部</span>
+            </button>
+            <span class="xml-info" id="xml-info"></span>
+        </div>
+        <div class="xml-content" id="xml-content">
+            <div class="xml-empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p>加载 XML 文件后在此查看原始内容</p>
+            </div>
+        </div>
+    </div>
+    <!-- End XML View Container -->
+</main>
+<script>
+    // Monaco Editor 初始化
+    window.monacoEditor = null;
+    window.monacoReady = false;
+    
+    // 配置 Monaco 加载路径 (本地资源)
+    require.config({ 
+        paths: { 
+            'vs': 'monaco/vs' 
+        }
+    });
+    
+    // 预加载 Monaco
+    require(['vs/editor/editor.main'], function() {
+        window.monacoReady = true;
+        console.log('✅ Monaco Editor loaded successfully');
+    });
+
+    // --- State & Elements ---
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const treePanel = document.getElementById('tree-panel');
+    const treeContainer = document.getElementById('tree-container');
+    const treeControls = document.getElementById('tree-controls');
+    const treeSearchInput = document.getElementById('tree-search-input');
+    const treeSortBtn = document.getElementById('tree-sort-btn');
+    const treeSortIcon = document.getElementById('tree-sort-icon');
+    const treeToggleBtn = document.getElementById('tree-toggle-btn');
+    const treeToggleIcon = document.getElementById('tree-toggle-icon');
+    const treeToggleText = document.getElementById('tree-toggle-text');
+    const detailPanel = document.getElementById('detail-panel');
+    const detailContent = document.getElementById('detail-content');
+    const searchBar = document.getElementById('search-bar');
+    const searchInput = document.getElementById('search-input');
+    const searchInfo = document.getElementById('search-info');
+    
+    // Help schema elements
+    const helpUploadBtn = document.getElementById('help-upload-btn');
+    const helpFileInput = document.getElementById('help-file-input');
+    const helpStatusText = document.getElementById('help-status-text');
+    const helpTooltip = document.getElementById('help-tooltip');
+    
+    var xmlDoc = null;
+    var xmlRawContent = null; // Store raw XML string for localStorage persistence
+    var xmlFilename = null; // Store filename for display after restore
+    var currentNode = null;
+    var currentNodePath = null; // Store path for re-selection
+    var sortState = 'natural'; // 'natural', 'asc', 'desc' (for detail panel)
+    var searchText = ''; // 搜索文本 (for detail panel)
+    var searchScope = 'both'; // 'property', 'value', 'both' (for detail panel)
+    // Tree panel states
+    var treeSearchText = '';
+    var treeSearchScope = 'both'; // 'name', 'value', 'both'
+    var treeSortState = 'natural'; // 'natural', 'asc', 'desc'
+    var treeExpanded = false; // false = collapsed, true = expanded
+    
+    // Help schema state
+    var helpSchema = null; // Parsed help schema
+    var helpSchemaRaw = null; // Raw JSON string for persistence
+    var helpSchemaFilename = null; // Help schema filename
+    
+    // View state
+    var currentView = 'tree'; // 'tree' | 'xml'
+    var xmlViewRendered = false; // Track if XML view needs re-render
+    
+    // Help drop zone element
+    const helpDropZone = document.getElementById('help-drop-zone');
+    
+    // View elements
+    const viewTabs = document.querySelectorAll('.view-tab');
+    const treeViewContainer = document.getElementById('tree-view-container');
+    const xmlViewContainer = document.getElementById('xml-view-container');
+    const xmlContentEl = document.getElementById('xml-content');
+    const xmlInfoEl = document.getElementById('xml-info');
+
+    // --- LocalStorage Keys ---
+    const STORAGE_KEYS = {
+        XML_CONTENT: 'xml_browser_xml_content',
+        XML_FILENAME: 'xml_browser_xml_filename',
+        TREE_SEARCH_TEXT: 'xml_browser_tree_search_text',
+        TREE_SEARCH_SCOPE: 'xml_browser_tree_search_scope',
+        TREE_SORT_STATE: 'xml_browser_tree_sort_state',
+        TREE_EXPANDED: 'xml_browser_tree_expanded',
+        SELECTED_NODE_PATH: 'xml_browser_selected_node_path',
+        DETAIL_SEARCH_TEXT: 'xml_browser_detail_search_text',
+        DETAIL_SEARCH_SCOPE: 'xml_browser_detail_search_scope',
+        DETAIL_SORT_STATE: 'xml_browser_detail_sort_state',
+        HELP_SCHEMA: 'xml_browser_help_schema',
+        HELP_SCHEMA_FILENAME: 'xml_browser_help_schema_filename',
+        CURRENT_VIEW: 'xml_browser_current_view',
+        XML_FOLD_STATE: 'xml_browser_xml_fold_state'
+    };
+
+    // =============================================
+    // Environment Detection (must be before event listeners)
+    // =============================================
+    // Check if already initialized to avoid duplicate variable errors
+    if (typeof window._xmlNavigatorInitialized === 'undefined') {
+        window._xmlNavigatorInitialized = true;
+    } else {
+        console.warn('Script already initialized, skipping...');
+        // Early return if needed, but continue for now
+    }
+    
+    // Use var to avoid "duplicate variable that shadows global property" error
+    var isTauri = window.__TAURI__ !== undefined;
+    
+    // Tauri v2 API - use core.invoke for plugin commands
+    var tauriInvoke = null;
+    var currentFilePath = null;
+    var currentHelpFilePath = null;
+    
+    if (isTauri) {
+        console.log('🖥️ Running in Tauri v2 desktop environment');
+        console.log('Available __TAURI__ keys:', Object.keys(window.__TAURI__));
+        console.log('__TAURI__ object:', window.__TAURI__);
+        
+        // Tauri v2: Try multiple ways to get invoke
+        if (window.__TAURI__.core?.invoke) {
+            tauriInvoke = window.__TAURI__.core.invoke;
+            console.log('✅ Found invoke via core.invoke');
+        } else if (window.__TAURI__.invoke) {
+            tauriInvoke = window.__TAURI__.invoke;
+            console.log('✅ Found invoke via __TAURI__.invoke');
+        } else if (window.__TAURI__.dialog) {
+            // If dialog plugin is directly available (withGlobalTauri)
+            console.log('✅ Dialog plugin directly available');
+            // We'll use invoke wrapper but note that dialog might be available
+        }
+        
+        if (!tauriInvoke) {
+            console.error('❌ Tauri invoke not found!');
+            console.error('Available __TAURI__ keys:', Object.keys(window.__TAURI__));
+            console.error('__TAURI__ structure:', JSON.stringify(Object.keys(window.__TAURI__ || {})));
+        } else {
+            console.log('✅ tauriInvoke function ready');
+        }
+    } else {
+        console.log('🌐 Running in browser environment');
+    }
+    
+    // =============================================
+    // Tauri v2 Plugin Wrappers (using core.invoke)
+    // =============================================
+    
+    // Dialog plugin wrapper - open file dialog
+    async function tauriDialogOpen(options) {
+        // First try direct plugin access (if withGlobalTauri is enabled)
+        if (window.__TAURI__?.dialog?.open) {
+            console.log('Using direct dialog.open API');
+            try {
+                const result = await window.__TAURI__.dialog.open(options);
+                return result;
+            } catch (err) {
+                console.error('Direct dialog.open failed:', err);
+            }
+        }
+        
+        // Fallback to invoke
+        if (!tauriInvoke) {
+            console.error('tauriInvoke not available and dialog plugin not found');
+            return null;
+        }
+        try {
+            console.log('Calling dialog.open via invoke with options:', options);
+            // Tauri v2: invoke format is 'plugin:name|command' with direct options
+            const result = await tauriInvoke('plugin:dialog|open', options);
+            console.log('Dialog open result:', result);
+            return result;
+        } catch (err) {
+            console.error('Dialog open error:', err);
+            // Try alternative format
+            try {
+                console.log('Trying alternative format with wrapped options...');
+                const result = await tauriInvoke('plugin:dialog|open', { options });
+                return result;
+            } catch (err2) {
+                console.error('Alternative format also failed:', err2);
+                throw err;
+            }
+        }
+    }
+    
+    // Dialog plugin wrapper - show message
+    async function tauriDialogMessage(message, options = {}) {
+        if (!tauriInvoke) return;
+        try {
+            await tauriInvoke('plugin:dialog|message', { 
+                message, 
+                title: options.title || 'Message',
+                kind: options.kind || 'info'
+            });
+        } catch (err) {
+            console.error('Dialog message error:', err);
+            // Fallback to alert
+            alert(message);
+        }
+    }
+    
+    // FS plugin wrapper - read text file
+    async function tauriReadTextFile(path) {
+        // First try direct plugin access (if withGlobalTauri is enabled)
+        if (window.__TAURI__?.fs?.readTextFile) {
+            console.log('Using direct fs.readTextFile API');
+            try {
+                const content = await window.__TAURI__.fs.readTextFile(path);
+                return content;
+            } catch (err) {
+                console.error('Direct fs.readTextFile failed:', err);
+            }
+        }
+        
+        // Fallback to invoke
+        if (!tauriInvoke) {
+            console.error('tauriInvoke not available and fs plugin not found');
+            return null;
+        }
+        try {
+            console.log('Reading file via invoke:', path);
+            // Tauri v2: invoke format for fs plugin
+            const content = await tauriInvoke('plugin:fs|read_text_file', { 
+                path,
+                options: {}
+            });
+            console.log('File read successfully, length:', content?.length);
+            return content;
+        } catch (err) {
+            console.error('Read file error:', err);
+            throw err;
+        }
+    }
+    
+    // FS plugin wrapper - write text file
+    async function tauriWriteTextFile(path, contents) {
+        if (!tauriInvoke) return;
+        try {
+            await tauriInvoke('plugin:fs|write_text_file', { 
+                path,
+                contents,
+                options: {}
+            });
+        } catch (err) {
+            console.error('Write file error:', err);
+            throw err;
+        }
+    }
+    
+    // Dialog plugin wrapper - save file dialog
+    async function tauriDialogSave(options) {
+        if (!tauriInvoke) return null;
+        try {
+            const result = await tauriInvoke('plugin:dialog|save', { options });
+            return result;
+        } catch (err) {
+            console.error('Dialog save error:', err);
+            throw err;
+        }
+    }
+    
+    // Dialog plugin wrapper - ask confirmation
+    async function tauriDialogAsk(message, options = {}) {
+        if (!tauriInvoke) return false;
+        try {
+            const result = await tauriInvoke('plugin:dialog|ask', { 
+                message, 
+                title: options.title || 'Confirm',
+                kind: options.kind || 'info'
+            });
+            return result;
+        } catch (err) {
+            console.error('Dialog ask error:', err);
+            return false;
+        }
+    }
+
+    // =============================================
+    // Unified File Processing Functions
+    // =============================================
+    
+    // Process XML content (shared by browser and Tauri)
+    function processXmlContent(content, filename) {
+        const parser = new DOMParser();
+        const parsedDoc = parser.parseFromString(content, "text/xml");
+        
+        // Check for parser errors
+        const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
+                            parsedDoc.querySelector("parsererror");
+        if (parserError) {
+            const errorMsg = 'XML 解析错误: ' + parserError.textContent;
+            console.error("XML Parser Error:", parserError.textContent);
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        
+        // Check if we have a valid document element
+        if (!parsedDoc.documentElement || parsedDoc.documentElement.nodeName === "html") {
+            const errorMsg = "无效的 XML 文档结构";
+            console.error("Invalid XML document structure");
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        
+        // Store the parsed document and raw content
+        xmlDoc = parsedDoc;
+        xmlRawContent = content;
+        xmlFilename = filename;
+        
+        // Reset states for new file
+        currentNodePath = null;
+        currentNode = null;
+        xmlViewRendered = false;
+        
+        // Update UI
+        dropZone.textContent = `File: ${filename}`;
+        
+        // Render tree
+        try {
+            renderTree(xmlDoc);
+        } catch (err) {
+            console.error("Error rendering tree:", err);
+            const errorMsg = "树渲染错误: " + err.message;
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        
+        // Reset detail view
+        try {
+            resetDetailView();
+        } catch (err) {
+            console.error("Error resetting detail view:", err);
+        }
+        
+        // If currently on XML view, render it
+        if (currentView === 'xml') {
+            renderXmlView();
+        }
+        
+        // Save state to localStorage
+        saveStateToStorage();
+        return true;
+    }
+    
+    // Process Help Schema content (shared by browser and Tauri)
+    function processHelpSchemaContent(content, filename) {
+        try {
+            const parsed = JSON.parse(content);
+            
+            // Validate basic structure
+            if (!parsed.definitions && !parsed.paths) {
+                const errorMsg = '帮助配置文件格式无效：缺少 definitions 或 paths';
+                if (isTauri && tauriInvoke) {
+                    tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+                } else {
+                    alert(errorMsg);
+                }
+                return false;
+            }
+            
+            // Process the schema (resolve $ref references)
+            helpSchema = processHelpSchema(parsed);
+            helpSchemaRaw = content;
+            helpSchemaFilename = filename;
+            
+            // Update UI
+            helpUploadBtn.classList.add('loaded');
+            helpStatusText.textContent = filename;
+            helpStatusText.title = filename;
+            
+            // Re-render tree and details to apply help
+            if (xmlDoc) {
+                renderTree(xmlDoc);
+                if (currentNode) {
+                    showNodeDetails(currentNode);
+                }
+            }
+            
+            // Save to localStorage
+            saveStateToStorage();
+            return true;
+            
+        } catch (err) {
+            console.error('Help schema parse error:', err);
+            const errorMsg = '帮助配置文件解析错误: ' + err.message;
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+    }
+
+    // =============================================
+    // Tauri File Operations
+    // =============================================
+    
+    // Open XML file using Tauri native dialog
+    async function tauriOpenXmlFile() {
+        if (!tauriInvoke) {
+            console.error('Tauri invoke not available');
+            return;
+        }
+        
+        try {
+            console.log('Opening XML file dialog...');
+            const filePath = await tauriDialogOpen({
+                multiple: false,
+                filters: [{
+                    name: 'XML Files',
+                    extensions: ['xml']
+                }]
+            });
+            
+            console.log('Selected file:', filePath);
+            
+            if (filePath) {
+                const content = await tauriReadTextFile(filePath);
+                currentFilePath = filePath;
+                
+                // Extract filename from path
+                const filename = filePath.split('/').pop().split('\\').pop();
+                
+                // Process the XML content
+                processXmlContent(content, filename);
+            }
+        } catch (err) {
+            console.error('Error opening file:', err);
+            await tauriDialogMessage('打开文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+        }
+    }
+    
+    // Open Help Schema file using Tauri native dialog
+    async function tauriOpenHelpFile() {
+        if (!tauriInvoke) {
+            console.error('Tauri invoke not available');
+            return;
+        }
+        
+        try {
+            console.log('Opening Help file dialog...');
+            const filePath = await tauriDialogOpen({
+                multiple: false,
+                filters: [{
+                    name: 'JSON Files',
+                    extensions: ['json']
+                }]
+            });
+            
+            console.log('Selected help file:', filePath);
+            
+            if (filePath) {
+                const content = await tauriReadTextFile(filePath);
+                currentHelpFilePath = filePath;
+                
+                // Extract filename from path
+                const filename = filePath.split('/').pop().split('\\').pop();
+                
+                // Process the help schema content
+                processHelpSchemaContent(content, filename);
+            }
+        } catch (err) {
+            console.error('Error opening help file:', err);
+            await tauriDialogMessage('打开帮助配置文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+        }
+    }
+    
+    // Expose Tauri functions globally for menu integration
+    if (isTauri) {
+        window.tauriOpenFile = tauriOpenXmlFile;
+        window.tauriOpenHelpFile = tauriOpenHelpFile;
+    }
+
+    // =============================================
+    // Event Listeners (Environment-aware)
+    // =============================================
+    
+    // --- XML Drop Zone Event Listeners ---
+    if (isTauri) {
+        // Tauri: Use native dialog on click
+        console.log('Setting up Tauri click handler for dropZone');
+        dropZone.addEventListener('click', (e) => {
+            console.log('DropZone clicked!', e);
+            e.preventDefault();
+            e.stopPropagation();
+            tauriOpenXmlFile().catch(err => {
+                console.error('Error in tauriOpenXmlFile:', err);
+            });
+        });
+        dropZone.style.cursor = 'pointer';
+        dropZone.textContent = 'CLICK TO OPEN XML FILE OR DRAG & DROP';
+        console.log('✅ Tauri click handler set up');
+        
+        // Use Tauri's event system for drag and drop (not HTML events)
+        if (window.__TAURI__?.event) {
+            console.log('Setting up Tauri drag-drop event listener');
+            let isOverDropZone = false;
+            
+            // Track mouse position to know if we're over the drop zone
+            dropZone.addEventListener('mouseenter', () => {
+                console.log('Mouse entered dropZone');
+                isOverDropZone = true;
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('mouseleave', () => {
+                console.log('Mouse left dropZone');
+                isOverDropZone = false;
+                dropZone.classList.remove('dragover');
+            });
+            
+            // Listen to Tauri's drag-drop event
+            window.__TAURI__.event.listen('tauri://drag-drop', async (event) => {
+                console.log('Tauri drag-drop event:', event);
+                console.log('isOverDropZone:', isOverDropZone);
+                console.log('Payload:', event.payload);
+                
+                if (isOverDropZone && event.payload && event.payload.paths && event.payload.paths.length > 0) {
+                    const filePath = event.payload.paths[0];
+                    console.log('Dropped file path:', filePath);
+                    
+                    if (filePath.toLowerCase().endsWith('.xml')) {
+                        try {
+                            const content = await tauriReadTextFile(filePath);
+                            currentFilePath = filePath;
+                            const filename = filePath.split('/').pop().split('\\').pop();
+                            processXmlContent(content, filename);
+                        } catch (err) {
+                            console.error('Error reading dropped XML file:', err);
+                            await tauriDialogMessage('读取拖放文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+                        }
+                    } else {
+                        console.warn('Invalid file type:', filePath);
+                        await tauriDialogMessage('请拖放 XML 格式的文件', { title: 'Warning', kind: 'warning' });
+                    }
+                }
+                
+                // Clean up visual feedback
+                isOverDropZone = false;
+                dropZone.classList.remove('dragover');
+            });
+            
+            console.log('✅ Tauri drag-drop event listener set up');
+        } else {
+            console.error('Tauri event API not available');
+        }
+    } else {
+        // Browser: Use file input
+        console.log('Setting up browser click handler for dropZone');
+        dropZone.addEventListener('click', () => {
+            console.log('DropZone clicked (browser mode)');
+            fileInput.click();
+        });
+        
+        // Browser: Use HTML5 drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Dragover event on dropZone');
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            console.log('Dragleave event on dropZone');
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+            
+            console.log('Drop event triggered', e);
+            console.log('dataTransfer.files:', e.dataTransfer.files);
+            
+            if (e.dataTransfer.files.length) {
+                console.log('Browser drop - handling file');
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleFile(e.target.files[0]);
+        }
+    });
+    
+    helpFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleHelpSchemaFile(e.target.files[0]);
+        }
+    });
+
+    // --- Help Schema Upload Event Listeners ---
+    if (isTauri) {
+        // Tauri: Use native dialog on click
+        console.log('Setting up Tauri click handler for helpUploadBtn');
+        helpUploadBtn.addEventListener('click', (e) => {
+            console.log('HelpUploadBtn clicked!', e);
+            e.preventDefault();
+            e.stopPropagation();
+            tauriOpenHelpFile().catch(err => {
+                console.error('Error in tauriOpenHelpFile:', err);
+            });
+        });
+        console.log('✅ Tauri help button handler set up');
+        
+        // Use Tauri's event system for drag and drop on help zone
+        if (window.__TAURI__?.event) {
+            console.log('Setting up Tauri drag-drop event listener for helpDropZone');
+            let isOverHelpDropZone = false;
+            
+            // Track mouse position to know if we're over the help drop zone
+            helpDropZone.addEventListener('mouseenter', () => {
+                console.log('Mouse entered helpDropZone');
+                isOverHelpDropZone = true;
+                helpDropZone.classList.add('dragover');
+            });
+            
+            helpDropZone.addEventListener('mouseleave', () => {
+                console.log('Mouse left helpDropZone');
+                isOverHelpDropZone = false;
+                helpDropZone.classList.remove('dragover');
+            });
+            
+            // Listen to Tauri's drag-drop event for help schema
+            window.__TAURI__.event.listen('tauri://drag-drop', async (event) => {
+                if (isOverHelpDropZone && event.payload && event.payload.paths && event.payload.paths.length > 0) {
+                    const filePath = event.payload.paths[0];
+                    console.log('Dropped help file path:', filePath);
+                    
+                    if (filePath.toLowerCase().endsWith('.json')) {
+                        try {
+                            const content = await tauriReadTextFile(filePath);
+                            currentHelpFilePath = filePath;
+                            const filename = filePath.split('/').pop().split('\\').pop();
+                            processHelpSchemaContent(content, filename);
+                        } catch (err) {
+                            console.error('Error reading dropped help file:', err);
+                            await tauriDialogMessage('读取帮助配置文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+                        }
+                    } else {
+                        console.warn('Invalid help file type:', filePath);
+                        await tauriDialogMessage('请上传 JSON 格式的帮助配置文件', { title: 'Warning', kind: 'warning' });
+                    }
+                }
+                
+                // Clean up visual feedback
+                isOverHelpDropZone = false;
+                helpDropZone.classList.remove('dragover');
+            });
+            
+            console.log('✅ Tauri drag-drop event listener for helpDropZone set up');
+        }
+    } else {
+        // Browser: Use file input
+        console.log('Setting up browser click handler for helpUploadBtn');
+        helpUploadBtn.addEventListener('click', () => {
+            console.log('HelpUploadBtn clicked (browser mode)');
+            helpFileInput.click();
+        });
+        
+        // Browser: Use HTML5 drag and drop for help zone
+        helpDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Dragover event on helpDropZone');
+            helpDropZone.classList.add('dragover');
+        });
+        
+        helpDropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Dragleave event on helpDropZone');
+            helpDropZone.classList.remove('dragover');
+        });
+        
+        helpDropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            helpDropZone.classList.remove('dragover');
+            
+            console.log('Drop event on helpDropZone', e);
+            console.log('helpDropZone dataTransfer.files:', e.dataTransfer.files);
+            
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (file.name.endsWith('.json')) {
+                    handleHelpSchemaFile(file);
+                } else {
+                    alert('请上传 JSON 格式的帮助配置文件');
+                }
+            }
+        });
+    }
+
+    // --- Search Event Listeners ---
+    searchInput.addEventListener('input', (e) => {
+        searchText = e.target.value;
+        if (currentNode) {
+            showNodeDetails(currentNode);
+        }
+        saveStateToStorage();
+    });
+
+    document.querySelectorAll('input[name="search-scope"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            searchScope = e.target.value;
+            if (currentNode) {
+                showNodeDetails(currentNode);
+            }
+            saveStateToStorage();
+        });
+    });
+
+    // --- Tree Search & Sort Event Listeners ---
+    treeSearchInput.addEventListener('input', (e) => {
+        treeSearchText = e.target.value;
+        if (xmlDoc) {
+            renderTree(xmlDoc);
+        }
+        saveStateToStorage();
+    });
+
+    document.querySelectorAll('input[name="tree-search-scope"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            treeSearchScope = e.target.value;
+            if (xmlDoc) {
+                renderTree(xmlDoc);
+            }
+            saveStateToStorage();
+        });
+    });
+
+    treeSortBtn.addEventListener('click', () => {
+        // Cycle through sort states
+        if (treeSortState === 'natural') {
+            treeSortState = 'asc';
+            treeSortIcon.textContent = '▲';
+        } else if (treeSortState === 'asc') {
+            treeSortState = 'desc';
+            treeSortIcon.textContent = '▼';
+        } else {
+            treeSortState = 'natural';
+            treeSortIcon.textContent = '↕';
+        }
+        
+        if (xmlDoc) {
+            renderTree(xmlDoc);
+        }
+        saveStateToStorage();
+    });
+
+    treeToggleBtn.addEventListener('click', () => {
+        treeExpanded = !treeExpanded;
+        
+        // Update button icon and text
+        if (treeExpanded) {
+            treeToggleIcon.textContent = '⊟';
+            treeToggleText.textContent = '折叠';
+        } else {
+            treeToggleIcon.textContent = '⊞';
+            treeToggleText.textContent = '展开';
+        }
+        
+        // Toggle all tree nodes
+        const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+        treeNodes.forEach(node => {
+            if (treeExpanded) {
+                node.classList.add('expanded');
+            } else {
+                node.classList.remove('expanded');
+            }
+        });
+        saveStateToStorage();
+    });
+
+    // --- View Tab Event Listeners ---
+    viewTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchView(tab.dataset.view);
+        });
+    });
+
+    // XML View toolbar buttons
+    document.getElementById('xml-fold-all').addEventListener('click', foldAllXmlNodes);
+    document.getElementById('xml-unfold-all').addEventListener('click', unfoldAllXmlNodes);
+
+    // --- File Handling ---
+    function handleFile(file) {
+        if (file.type !== "text/xml" && !file.name.endsWith(".xml")) {
+            alert("PLEASE UPLOAD A VALID XML FILE.");
+            return;
+        }
+
+        dropZone.textContent = `File: ${file.name}`;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const parser = new DOMParser();
+            const rawContent = e.target.result;
+            
+            // Step 1: Parse XML
+            const parsedDoc = parser.parseFromString(rawContent, "text/xml");
+            
+            // Step 2: Check for parser errors (handle namespaced parsererror)
+            const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
+                                parsedDoc.querySelector("parsererror");
+            if (parserError) {
+                console.error("XML Parser Error:", parserError.textContent);
+                alert("XML 解析错误: " + parserError.textContent);
+                return;
+            }
+            
+            // Step 3: Check if we have a valid document element
+            if (!parsedDoc.documentElement || parsedDoc.documentElement.nodeName === "html") {
+                console.error("Invalid XML document structure");
+                alert("无效的 XML 文档结构");
+                return;
+            }
+            
+            // Store the parsed document and raw content
+            xmlDoc = parsedDoc;
+            xmlRawContent = rawContent;
+            xmlFilename = file.name;
+            
+            // Reset states for new file
+            currentNodePath = null;
+            currentNode = null;
+            xmlViewRendered = false; // Force re-render of XML view
+            
+            // Step 4: Render tree
+            try {
+                renderTree(xmlDoc);
+            } catch (err) {
+                console.error("Error rendering tree:", err);
+                alert("树渲染错误: " + err.message);
+                return;
+            }
+            
+            // Step 5: Reset detail view
+            try {
+                resetDetailView();
+            } catch (err) {
+                console.error("Error resetting detail view:", err);
+                alert("重置详情面板错误: " + err.message);
+            }
+            
+            // Step 6: If currently on XML view, render it
+            if (currentView === 'xml') {
+                renderXmlView();
+            }
+            
+            // Save state to localStorage
+            saveStateToStorage();
+        };
+        
+        reader.onerror = (err) => {
+            console.error("FileReader error:", err);
+            alert("ERROR READING FILE.");
+        };
+        
+        reader.readAsText(file);
+    }
+
+    // --- Help Schema Handling ---
+    function handleHelpSchemaFile(file) {
+        if (!file.name.endsWith('.json')) {
+            alert('请上传 JSON 格式的帮助配置文件');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const rawContent = e.target.result;
+                const parsed = JSON.parse(rawContent);
+                
+                // Validate basic structure
+                if (!parsed.definitions && !parsed.paths) {
+                    alert('帮助配置文件格式无效：缺少 definitions 或 paths');
+                    return;
+                }
+                
+                // Process the schema (resolve $ref references)
+                helpSchema = processHelpSchema(parsed);
+                helpSchemaRaw = rawContent;
+                helpSchemaFilename = file.name;
+                
+                // Update UI
+                helpUploadBtn.classList.add('loaded');
+                helpStatusText.textContent = file.name;
+                helpStatusText.title = file.name; // Show full name on hover
+                
+                // Re-render tree and details to apply help
+                if (xmlDoc) {
+                    renderTree(xmlDoc);
+                    if (currentNode) {
+                        showNodeDetails(currentNode);
+                    }
+                }
+                
+                // Save to localStorage
+                saveStateToStorage();
+                
+            } catch (err) {
+                console.error('Help schema parse error:', err);
+                alert('帮助配置文件解析错误: ' + err.message);
+            }
+        };
+        
+        reader.onerror = () => {
+            alert('读取帮助配置文件失败');
+        };
+        
+        reader.readAsText(file);
+    }
+
+    // Process help schema and resolve $ref references
+    function processHelpSchema(schema) {
+        const processed = {
+            definitions: schema.definitions || {},
+            paths: {},
+            wildcardPaths: [] // Store wildcard patterns for matching
+        };
+        
+        // Process paths and resolve $ref
+        if (schema.paths) {
+            for (const [path, value] of Object.entries(schema.paths)) {
+                const resolved = resolveRef(value, schema);
+                
+                if (path.includes('**')) {
+                    // Store wildcard patterns separately
+                    processed.wildcardPaths.push({
+                        pattern: path,
+                        regex: wildcardToRegex(path),
+                        help: resolved
+                    });
+                } else {
+                    processed.paths[path] = resolved;
+                }
+            }
+        }
+        
+        return processed;
+    }
+
+    // Resolve $ref references in help schema
+    function resolveRef(value, schema) {
+        if (!value || typeof value !== 'object') {
+            return value;
+        }
+        
+        if (value.$ref) {
+            // Parse $ref path like "#/definitions/Hotel_Code"
+            const refPath = value.$ref;
+            if (refPath.startsWith('#/definitions/')) {
+                const defName = refPath.substring('#/definitions/'.length);
+                if (schema.definitions && schema.definitions[defName]) {
+                    return { ...schema.definitions[defName] };
+                }
+            }
+            return null;
+        }
+        
+        return value;
+    }
+
+    // Convert wildcard pattern to regex
+    function wildcardToRegex(pattern) {
+        // ** matches any number of path segments
+        // * matches single path segment
+        const escaped = pattern
+            .replace(/\./g, '\\.')
+            .replace(/\*\*/g, '##DOUBLE##')
+            .replace(/\*/g, '[^.]+')
+            .replace(/##DOUBLE##/g, '.*');
+        return new RegExp('^' + escaped + '$');
+    }
+
+    // Find help content for a given path or tag name
+    function findHelpContent(path, tagName) {
+        if (!helpSchema) return null;
+        
+        // 1. Try exact path match
+        if (helpSchema.paths[path]) {
+            return helpSchema.paths[path];
+        }
+        
+        // 2. Try wildcard path match
+        for (const wp of helpSchema.wildcardPaths) {
+            if (wp.regex.test(path)) {
+                return wp.help;
+            }
+        }
+        
+        // 3. Try tag name match in definitions
+        if (helpSchema.definitions[tagName]) {
+            return helpSchema.definitions[tagName];
+        }
+        
+        // 4. Try tag name without @ prefix (for attributes)
+        if (tagName.startsWith('@')) {
+            const attrName = tagName.substring(1);
+            if (helpSchema.definitions[attrName]) {
+                return helpSchema.definitions[attrName];
+            }
+        }
+        
+        // 5. Try partial path match (last segment of path)
+        const pathParts = path.split('.');
+        for (let i = pathParts.length - 1; i >= 0; i--) {
+            const partialPath = pathParts.slice(i).join('.');
+            if (helpSchema.paths[partialPath]) {
+                return helpSchema.paths[partialPath];
+            }
+        }
+        
+        return null;
+    }
+
+    // --- Validation Functions ---
+    // Validate a value against help schema definition
+    function validateValue(value, helpContent) {
+        const result = { valid: true, errors: [] };
+        
+        if (!helpContent) return result;
+        
+        // Handle value - could be undefined, null, or empty string
+        const trimmedValue = (value === undefined || value === null) ? '' : String(value).trim();
+        
+        // 1. Required validation - check for true, "true", or 1
+        const isRequired = helpContent.required === true || 
+                          helpContent.required === 'true' || 
+                          helpContent.required === 1;
+        
+        if (isRequired && trimmedValue === '') {
+            result.valid = false;
+            result.errors.push('此字段为必填项');
+            return result; // No need to continue if empty and required
+        }
+        
+        // Skip other validations if value is empty and not required
+        if (trimmedValue === '') return result;
+        
+        // 2. Type validation
+        if (helpContent.type) {
+            const typeError = validateType(trimmedValue, helpContent.type, helpContent.format);
+            if (typeError) {
+                result.valid = false;
+                result.errors.push(typeError);
+            }
+        }
+        
+        // 3. Format validation (regex) - only for string type or when type is not date
+        if (helpContent.format && helpContent.type !== 'date') {
+            try {
+                const regex = new RegExp(helpContent.format);
+                if (!regex.test(trimmedValue)) {
+                    result.valid = false;
+                    result.errors.push(`格式不匹配，期望格式: ${helpContent.format}`);
+                }
+            } catch (e) {
+                // Invalid regex in schema, skip validation
+                console.warn('Invalid regex in schema:', helpContent.format);
+            }
+        }
+        
+        return result;
+    }
+    
+    // Validate value type
+    function validateType(value, type, format) {
+        switch (type.toLowerCase()) {
+            case 'string':
+                // String type accepts anything
+                return null;
+                
+            case 'integer':
+                if (!/^-?\d+$/.test(value)) {
+                    return `类型错误：期望整数，实际值 "${value}"`;
+                }
+                return null;
+                
+            case 'number':
+                if (isNaN(parseFloat(value)) || !isFinite(value)) {
+                    return `类型错误：期望数字，实际值 "${value}"`;
+                }
+                return null;
+                
+            case 'date':
+                return validateDateFormat(value, format);
+                
+            case 'boolean':
+                if (!['true', 'false', '1', '0', 'yes', 'no'].includes(value.toLowerCase())) {
+                    return `类型错误：期望布尔值，实际值 "${value}"`;
+                }
+                return null;
+                
+            default:
+                return null;
+        }
+    }
+    
+    // Validate date format
+    function validateDateFormat(value, format) {
+        if (!format) {
+            // Try common date formats
+            const datePatterns = [
+                /^\d{4}-\d{2}-\d{2}$/,           // YYYY-MM-DD
+                /^\d{2}\/\d{2}\/\d{4}$/,         // MM/DD/YYYY
+                /^\d{2}\/\d{2}\/\d{2}$/,         // MM/DD/YY
+                /^\d{4}\/\d{2}\/\d{2}$/          // YYYY/MM/DD
+            ];
+            
+            if (!datePatterns.some(p => p.test(value))) {
+                return `日期格式错误：无法识别的日期格式 "${value}"`;
+            }
+            return null;
+        }
+        
+        // Convert format pattern to regex
+        let pattern = format
+            .replace('YYYY', '\\d{4}')
+            .replace('YY', '\\d{2}')
+            .replace('MM', '\\d{2}')
+            .replace('DD', '\\d{2}')
+            .replace('HH', '\\d{2}')
+            .replace('mm', '\\d{2}')
+            .replace('ss', '\\d{2}');
+        
+        try {
+            const regex = new RegExp('^' + pattern + '$');
+            if (!regex.test(value)) {
+                return `日期格式错误：期望 ${format}，实际值 "${value}"`;
+            }
+        } catch (e) {
+            // Invalid pattern, skip
+        }
+        
+        return null;
+    }
+
+    // --- Tooltip Functions ---
+    let tooltipTimeout = null;
+    let isMouseInTooltip = false;
+    
+    // Add tooltip mouse event listeners
+    helpTooltip.addEventListener('mouseenter', () => {
+        isMouseInTooltip = true;
+        // Cancel any pending hide
+        if (tooltipTimeout) {
+            clearTimeout(tooltipTimeout);
+            tooltipTimeout = null;
+        }
+    });
+    
+    helpTooltip.addEventListener('mouseleave', () => {
+        isMouseInTooltip = false;
+        hideTooltip();
+    });
+    
+    function showTooltip(element, helpContent, nodePath, errors) {
+        if (!helpContent && (!errors || errors.length === 0)) return;
+        
+        // Clear any pending hide
+        if (tooltipTimeout) {
+            clearTimeout(tooltipTimeout);
+            tooltipTimeout = null;
+        }
+        
+        // Build tooltip content with errors and help
+        let fullHtml = '';
+        
+        // Add error section if there are errors
+        if (errors && errors.length > 0) {
+            fullHtml += `
+                <div class="help-tooltip-error">
+                    <div class="help-tooltip-error-title">验证错误</div>
+                    <ul class="help-tooltip-error-list">
+                        ${errors.map(err => `<li>${escapeHtml(err)}</li>`).join('')}
+                    </ul>
+                </div>`;
+        }
+        
+        // Add help content section
+        if (helpContent) {
+            fullHtml += `<div class="help-tooltip-header">${escapeHtml(nodePath || '')}</div>`;
+            
+            let bodyHtml = '';
+            
+            if (helpContent.description) {
+                bodyHtml += `<div class="help-tooltip-desc">${escapeHtml(helpContent.description)}</div>`;
+            }
+            
+            if (helpContent.type) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">类型</span>
+                        <span class="help-tooltip-value">${escapeHtml(helpContent.type)}</span>
+                    </div>`;
+            }
+            
+            if (helpContent.format) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">格式</span>
+                        <span class="help-tooltip-value">${escapeHtml(helpContent.format)}</span>
+                    </div>`;
+            }
+            
+            if (helpContent.example !== undefined) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">示例</span>
+                        <span class="help-tooltip-value"><code class="help-tooltip-example">${escapeHtml(String(helpContent.example))}</code></span>
+                    </div>`;
+            }
+            
+            if (helpContent.required !== undefined) {
+                bodyHtml += `
+                    <div class="help-tooltip-row">
+                        <span class="help-tooltip-label">必填</span>
+                        <span class="help-tooltip-value">${helpContent.required ? '是' : '否'}</span>
+                    </div>`;
+            }
+            
+            fullHtml += `<div class="help-tooltip-body">${bodyHtml}</div>`;
+        }
+        
+        // Update tooltip content
+        helpTooltip.innerHTML = fullHtml;
+        
+        // Position tooltip near the element (below and slightly to the right)
+        const rect = element.getBoundingClientRect();
+        
+        // Show tooltip below the element, aligned to its left edge
+        let left = rect.left;
+        let top = rect.bottom + 8;
+        
+        // Make tooltip visible temporarily to measure its size
+        helpTooltip.style.visibility = 'hidden';
+        helpTooltip.style.display = 'block';
+        const tooltipWidth = helpTooltip.offsetWidth;
+        const tooltipHeight = helpTooltip.offsetHeight;
+        helpTooltip.style.visibility = '';
+        helpTooltip.style.display = '';
+        
+        // Adjust if tooltip would go off right edge of screen
+        if (left + tooltipWidth > window.innerWidth - 10) {
+            left = window.innerWidth - tooltipWidth - 10;
+        }
+        
+        // Adjust if tooltip would go off left edge
+        if (left < 10) {
+            left = 10;
+        }
+        
+        // Track if we're showing above or below
+        let showAbove = false;
+        
+        // If tooltip would go off bottom, show it above the element instead
+        if (top + tooltipHeight > window.innerHeight - 10) {
+            top = rect.top - tooltipHeight - 8;
+            showAbove = true;
+        }
+        
+        // If still off top, just position at top of screen
+        if (top < 10) {
+            top = 10;
+            showAbove = false;
+        }
+        
+        // Calculate arrow position to point at element center
+        const arrowLeft = Math.max(12, Math.min(rect.left + rect.width / 2 - left - 6, tooltipWidth - 24));
+        helpTooltip.style.setProperty('--arrow-left', arrowLeft + 'px');
+        
+        helpTooltip.style.left = left + 'px';
+        helpTooltip.style.top = top + 'px';
+        helpTooltip.classList.toggle('above', showAbove);
+        helpTooltip.classList.add('visible');
+    }
+    
+    function hideTooltip() {
+        // Don't hide if mouse is inside tooltip
+        if (isMouseInTooltip) return;
+        
+        tooltipTimeout = setTimeout(() => {
+            // Double check mouse isn't in tooltip before hiding
+            if (!isMouseInTooltip) {
+                helpTooltip.classList.remove('visible');
+                helpTooltip.classList.remove('above');
+            }
+        }, 150);
+    }
+
+    // --- View Switching ---
+    function switchView(viewName) {
+        if (currentView === viewName) return;
+        
+        currentView = viewName;
+        
+        // Update Tab styles
+        viewTabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.view === viewName);
+        });
+        
+        // Toggle container visibility
+        treeViewContainer.classList.toggle('active', viewName === 'tree');
+        xmlViewContainer.classList.toggle('active', viewName === 'xml');
+        
+        // If switching to XML View and we have XML content, render it
+        if (viewName === 'xml' && xmlRawContent) {
+            if (!xmlViewRendered) {
+                renderXmlView();
+            }
+        }
+        
+        saveStateToStorage();
+    }
+
+    // --- XML View Rendering ---
+    function renderXmlView() {
+        if (!xmlRawContent) {
+            xmlContentEl.innerHTML = `
+                <div class="xml-empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p>加载 XML 文件后在此查看原始内容</p>
+                </div>`;
+            return;
+        }
+        
+        // Wait for Monaco to be loaded
+        if (!window.monacoReady) {
+            xmlContentEl.innerHTML = `
+                <div class="xml-empty-state">
+                    <p>正在加载代码编辑器...</p>
+                </div>`;
+            setTimeout(() => renderXmlView(), 200);
+            return;
+        }
+        
+        // Clear existing content
+        xmlContentEl.innerHTML = '';
+        
+        try {
+            // Destroy existing editor if any
+            if (window.monacoEditor) {
+                window.monacoEditor.dispose();
+                window.monacoEditor = null;
+            }
+            
+            // Create Monaco editor
+            window.monacoEditor = monaco.editor.create(xmlContentEl, {
+                value: xmlRawContent,
+                language: 'xml',
+                theme: 'vs-dark',
+                readOnly: true,
+                automaticLayout: true,
+                minimap: { enabled: true },
+                folding: true,
+                foldingStrategy: 'indentation',
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                fontSize: 14,
+                fontFamily: "'Consolas', 'Monaco', 'Fira Code', monospace"
+            });
+            
+            // Update info
+            updateXmlInfo();
+            
+            xmlViewRendered = true;
+        } catch (err) {
+            console.error('Monaco initialization error:', err);
+            xmlContentEl.innerHTML = `
+                <div class="xml-empty-state">
+                    <p style="color: #dc2626;">初始化编辑器失败: ${err.message}</p>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">请检查浏览器控制台了解详情</p>
+                </div>`;
+        }
+    }
+
+    function foldAllXmlNodes() {
+        if (window.monacoEditor) {
+            // Monaco: 折叠所有可折叠区域
+            window.monacoEditor.getAction('editor.foldAll').run();
+            updateXmlInfo();
+        }
+    }
+
+    function unfoldAllXmlNodes() {
+        if (window.monacoEditor) {
+            // Monaco: 展开所有折叠区域
+            window.monacoEditor.getAction('editor.unfoldAll').run();
+            updateXmlInfo();
+        }
+    }
+
+    function updateXmlInfo() {
+        if (!xmlRawContent) {
+            xmlInfoEl.textContent = '';
+            return;
+        }
+        
+        const lines = xmlRawContent.split('\n').length;
+        const size = (xmlRawContent.length / 1024).toFixed(2);
+        xmlInfoEl.textContent = `${lines} 行 | ${size} KB`;
+    }
+
+    // --- Tree Rendering ---
+    function renderTree(doc) {
+        try {
+            treeContainer.innerHTML = '';
+            const root = doc.documentElement;
+            const rootNode = createTreeNode(root);
+            if (rootNode) {
+                treeContainer.appendChild(rootNode);
+                
+                // Show tree controls after rendering
+                treeControls.classList.add('visible');
+                
+                // Restore selection if we have a saved path
+                if (currentNodePath) {
+                    setTimeout(() => restoreNodeSelection(currentNodePath), 0);
+                }
+            } else {
+                treeContainer.innerHTML = '<div class="empty-state" style="height: auto; padding-top: 2rem;">NO MATCHING NODES FOUND.</div>';
+            }
+        } catch (err) {
+            console.error("Error rendering tree:", err);
+            throw err;
+        }
+    }
+
+    function createTreeNode(xmlNode) {
+        // Check if this node should be shown based on search filter
+        if (!shouldShowNode(xmlNode, treeSearchText, treeSearchScope)) {
+            return null;
+        }
+        
+        const hasChildren = hasElementChildren(xmlNode);
+        
+        // Container for the node
+        const li = document.createElement('div');
+        li.className = `tree-node ${hasChildren ? '' : 'leaf-node'}`;
+        li.dataset.nodePath = getNodePath(xmlNode); // Store path for selection
+
+        // The visible content line (Icon + Tag Name)
+        const content = document.createElement('div');
+        content.className = 'tree-content';
+        
+        // Arrow Icon
+        const icon = document.createElement('span');
+        icon.className = 'toggle-icon';
+        icon.textContent = '▶'; 
+        content.appendChild(icon);
+
+        // Tag Name
+        const title = document.createElement('span');
+        title.className = 'tag-name';
+        title.textContent = xmlNode.nodeName;
+        
+        // Add help indicator if help content exists
+        const nodePath = getNodePath(xmlNode);
+        const helpContent = findHelpContent(nodePath, xmlNode.nodeName);
+        
+        // Validate leaf node values
+        let validationResult = { valid: true, errors: [] };
+        const isLeafNode = !hasElementChildren(xmlNode);
+        if (isLeafNode && helpContent) {
+            const nodeValue = xmlNode.textContent.trim();
+            validationResult = validateValue(nodeValue, helpContent);
+        }
+        
+        // Add validation error styling and tooltip
+        if (!validationResult.valid) {
+            title.classList.add('validation-error');
+            // Show combined tooltip with both errors and help content
+            title.addEventListener('mouseenter', (e) => {
+                showTooltip(title, helpContent, nodePath, validationResult.errors);
+            });
+            title.addEventListener('mouseleave', hideTooltip);
+        } else if (helpContent) {
+            // Show help tooltip only
+            title.classList.add('has-help');
+            title.addEventListener('mouseenter', (e) => {
+                showTooltip(title, helpContent, nodePath, null);
+            });
+            title.addEventListener('mouseleave', hideTooltip);
+        }
+        
+        content.appendChild(title);
+
+        // Click Handler: Selection & Toggling
+        content.onclick = (e) => {
+            e.stopPropagation();
+            
+            // Clear previous selection and parent path highlights
+            document.querySelectorAll('.tree-content.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.tree-content.parent-path').forEach(el => el.classList.remove('parent-path'));
+            
+            // Add selected class to current node
+            content.classList.add('selected');
+            
+            // Highlight parent path from current node to root
+            let parentElement = li.parentElement;
+            while (parentElement) {
+                if (parentElement.classList && parentElement.classList.contains('tree-node')) {
+                    const parentContent = parentElement.querySelector(':scope > .tree-content');
+                    if (parentContent) {
+                        parentContent.classList.add('parent-path');
+                    }
+                }
+                parentElement = parentElement.parentElement;
+            }
+
+            // Save current node and path
+            currentNode = xmlNode;
+            currentNodePath = getNodePath(xmlNode);
+
+            // Reset detail panel sort state when selecting a new node
+            sortState = 'natural';
+
+            // Show Details
+            showNodeDetails(xmlNode);
+
+            // Toggle Expansion if it has children
+            if (hasChildren) {
+                li.classList.toggle('expanded');
+            }
+            
+            // Save state to localStorage
+            saveStateToStorage();
+        };
+
+        li.appendChild(content);
+
+        // Recursively build children
+        if (hasChildren) {
+            const childrenContainer = document.createElement('div');
+            childrenContainer.className = 'node-children';
+            
+            // Apply sorting to children
+            const sortedChildren = sortTreeChildren(xmlNode.children, treeSortState);
+            
+            sortedChildren.forEach(child => {
+                const childNode = createTreeNode(child);
+                if (childNode) { // Only append if not filtered out
+                    childrenContainer.appendChild(childNode);
+                }
+            });
+            
+            // Only add children container if it has visible children
+            if (childrenContainer.children.length > 0) {
+                li.appendChild(childrenContainer);
+            } else if (!nodeMatchesSearch(xmlNode, treeSearchText, treeSearchScope)) {
+                // If no children are visible and current node doesn't match, hide it
+                return null;
+            }
+        }
+
+        return li;
+    }
+
+    function hasElementChildren(node) {
+        return node.children && node.children.length > 0;
+    }
+
+    // --- Tree Node Matching & Filtering ---
+    // Collect all descendant text values from a node
+    function collectNodeValues(xmlNode) {
+        const values = [];
+        
+        function collectRecursive(node) {
+            // Get direct text content
+            Array.from(node.childNodes).forEach(child => {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    const text = child.nodeValue.trim();
+                    if (text) {
+                        values.push(text);
+                    }
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    // If it's a leaf element, get its text content
+                    if (!hasElementChildren(child)) {
+                        const text = child.textContent.trim();
+                        if (text) {
+                            values.push(text);
+                        }
+                    } else {
+                        // Otherwise recurse
+                        collectRecursive(child);
+                    }
+                }
+            });
+        }
+        
+        collectRecursive(xmlNode);
+        return values;
+    }
+
+    // Check if a node matches the search criteria
+    function nodeMatchesSearch(xmlNode, searchText, scope) {
+        if (!searchText || searchText.trim() === '') {
+            return true; // No search, show all
+        }
+        
+        const searchLower = searchText.toLowerCase().trim();
+        
+        // Check node name
+        const nameMatch = xmlNode.nodeName.toLowerCase().includes(searchLower);
+        
+        if (scope === 'name') {
+            return nameMatch;
+        }
+        
+        // Check values
+        const values = collectNodeValues(xmlNode);
+        const valueMatch = values.some(val => val.toLowerCase().includes(searchLower));
+        
+        if (scope === 'value') {
+            return valueMatch;
+        }
+        
+        // scope === 'both'
+        return nameMatch || valueMatch;
+    }
+
+    // Check if node or any of its descendants should be shown
+    function shouldShowNode(xmlNode, searchText, scope) {
+        if (!searchText || searchText.trim() === '') {
+            return true; // No filter
+        }
+        
+        // Check if current node matches
+        if (nodeMatchesSearch(xmlNode, searchText, scope)) {
+            return true;
+        }
+        
+        // Check if any child matches (recursively)
+        if (xmlNode.children) {
+            for (let child of xmlNode.children) {
+                if (shouldShowNode(child, searchText, scope)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    // --- Sorting Logic ---
+    function applySorting(data, state) {
+        if (state === 'natural') {
+            return data; // Keep original order
+        }
+        
+        const sorted = [...data]; // Create a copy to avoid mutating original
+        sorted.sort((a, b) => {
+            const nameA = a.name.toLowerCase();
+            const nameB = b.name.toLowerCase();
+            
+            if (state === 'asc') {
+                return nameA.localeCompare(nameB);
+            } else if (state === 'desc') {
+                return nameB.localeCompare(nameA);
+            }
+            return 0;
+        });
+        
+        return sorted;
+    }
+
+    // Sort tree children (XML nodes)
+    function sortTreeChildren(children, sortState) {
+        // Always convert to array first (HTMLCollection doesn't have forEach)
+        const childArray = Array.from(children);
+        
+        if (sortState === 'natural') {
+            return childArray; // Keep original order
+        }
+        
+        childArray.sort((a, b) => {
+            const nameA = a.nodeName.toLowerCase();
+            const nameB = b.nodeName.toLowerCase();
+            
+            if (sortState === 'asc') {
+                return nameA.localeCompare(nameB);
+            } else if (sortState === 'desc') {
+                return nameB.localeCompare(nameA);
+            }
+            return 0;
+        });
+        
+        return childArray;
+    }
+
+    // --- Filtering Logic ---
+    function applyFiltering(data, text, scope) {
+        if (!text || text.trim() === '') {
+            return data; // No filter applied
+        }
+        
+        const searchLower = text.toLowerCase().trim();
+        
+        return data.filter(item => {
+            const nameMatch = item.name.toLowerCase().includes(searchLower);
+            const valueMatch = item.value.toLowerCase().includes(searchLower);
+            
+            switch(scope) {
+                case 'property':
+                    return nameMatch;
+                case 'value':
+                    return valueMatch;
+                case 'both':
+                default:
+                    return nameMatch || valueMatch;
+            }
+        });
+    }
+
+    function toggleSortState() {
+        if (sortState === 'natural') {
+            sortState = 'asc';
+        } else if (sortState === 'asc') {
+            sortState = 'desc';
+        } else {
+            sortState = 'natural';
+        }
+    }
+
+    function getSortIndicator() {
+        if (sortState === 'asc') {
+            return ' <span class="sort-indicator">▲</span>';
+        } else if (sortState === 'desc') {
+            return ' <span class="sort-indicator">▼</span>';
+        }
+        return '';
+    }
+
+    // --- Detail View Rendering ---
+    function showNodeDetails(node) {
+        // Save current node for re-rendering on sort
+        currentNode = node;
+        
+        // Show search bar when details are displayed
+        searchBar.classList.add('visible');
+        
+        // Collect attributes
+        const attributes = Array.from(node.attributes || []).map(attr => ({
+            name: `@${attr.name}`,
+            value: attr.value
+        }));
+
+        // Collect direct child text nodes or leaf element nodes
+        let directData = [];
+        
+        // Check for text content directly in this node (mixed content)
+        const textContent = Array.from(node.childNodes)
+            .filter(n => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim() !== "")
+            .map(n => n.nodeValue.trim())
+            .join(" ");
+
+        if (textContent) {
+            directData.push({ name: '#text', value: textContent });
+        }
+
+        // Collect "Leaf" Children (Elements that contain only text)
+        Array.from(node.children).forEach(child => {
+            if (!hasElementChildren(child)) {
+                directData.push({
+                    name: child.nodeName,
+                    value: child.textContent
+                });
+            }
+        });
+
+        const allData = [...attributes, ...directData];
+
+        if (allData.length === 0) {
+            detailContent.innerHTML = `
+                <div class="empty-state">
+                    <p>NO DIRECT ATTRIBUTES OR LEAF CHILDREN VALUES.</p>
+                </div>`;
+            updateSearchInfo(0, 0);
+            return;
+        }
+
+        const path = getNodePath(node);
+        
+        // Apply filtering first
+        const filteredData = applyFiltering(allData, searchText, searchScope);
+        
+        // Update search info
+        updateSearchInfo(filteredData.length, allData.length);
+        
+        // Then apply sorting
+        const sortedData = applySorting(filteredData, sortState);
+
+        let html = `
+            <div class="detail-card">
+                <div class="card-header">
+                    <h2>${node.nodeName}</h2>
+                    <div class="path-breadcrumb">${path}</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable" id="sort-header">PROPERTY / TAG${getSortIndicator()}</th>
+                            <th>VALUE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        if (sortedData.length === 0) {
+            html += `
+                <tr>
+                    <td colspan="2" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                        没有匹配的结果
+                    </td>
+                </tr>
+            `;
+        } else {
+            sortedData.forEach((item, index) => {
+                const itemPath = path + '.' + item.name.replace(/^@/, '');
+                const itemHelp = findHelpContent(itemPath, item.name);
+                
+                // Validate value
+                const validation = itemHelp ? validateValue(item.value, itemHelp) : { valid: true, errors: [] };
+                const hasError = !validation.valid;
+                const errorClass = hasError ? 'validation-error' : '';
+                const hasHelpClass = itemHelp ? 'has-help' : '';
+                const errorsJson = hasError ? escapeHtml(JSON.stringify(validation.errors)) : '';
+                
+                html += `
+                    <tr>
+                        <td class="attr-name ${hasHelpClass} ${errorClass}" data-item-index="${index}" data-item-name="${escapeHtml(item.name)}" data-item-path="${escapeHtml(itemPath)}" data-errors="${errorsJson}">${escapeHtml(item.name)}</td>
+                        <td class="attr-value ${errorClass}">${escapeHtml(item.value)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        detailContent.innerHTML = html;
+        
+        // Add click handler to sortable header
+        const sortHeader = document.getElementById('sort-header');
+        if (sortHeader) {
+            sortHeader.onclick = () => {
+                toggleSortState();
+                showNodeDetails(currentNode);
+                saveStateToStorage();
+            };
+        }
+        
+        // Add hover handlers for tooltips on attribute names (combined help + errors)
+        const attrNameCells = detailContent.querySelectorAll('td.attr-name.has-help');
+        attrNameCells.forEach(cell => {
+            const itemName = cell.dataset.itemName;
+            const itemPath = cell.dataset.itemPath;
+            const itemHelp = findHelpContent(itemPath, itemName);
+            const errorsJson = cell.dataset.errors;
+            
+            let errors = null;
+            if (errorsJson) {
+                try {
+                    errors = JSON.parse(errorsJson);
+                } catch (e) {
+                    console.warn('Failed to parse errors:', e);
+                }
+            }
+            
+            if (itemHelp || (errors && errors.length > 0)) {
+                cell.addEventListener('mouseenter', () => {
+                    showTooltip(cell, itemHelp, itemName, errors);
+                });
+                cell.addEventListener('mouseleave', hideTooltip);
+            }
+        });
+    }
+
+    function updateSearchInfo(filtered, total) {
+        if (!searchText || searchText.trim() === '') {
+            searchInfo.textContent = '';
+        } else {
+            searchInfo.textContent = `显示 ${filtered} / ${total} 项`;
+        }
+    }
+
+    function resetDetailView() {
+        // Hide search bar when no node is selected
+        searchBar.classList.remove('visible');
+        searchText = '';
+        searchInput.value = '';
+        searchInfo.textContent = '';
+        
+        detailContent.innerHTML = `
+            <div class="empty-state">
+                <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p>SELECT A NODE FROM THE TREE TO VIEW DETAILS</p>
+            </div>`;
+    }
+
+    function getNodePath(node) {
+        const path = [];
+        let current = node;
+        while (current && current.nodeType === Node.ELEMENT_NODE) {
+            path.unshift(current.nodeName);
+            current = current.parentNode;
+        }
+        return path.join('.');
+    }
+
+    // Restore node selection after re-rendering tree
+    function restoreNodeSelection(path) {
+        if (!path) return;
+        
+        // Find the tree node with matching path
+        const treeNodes = treeContainer.querySelectorAll('.tree-node');
+        for (let treeNode of treeNodes) {
+            if (treeNode.dataset.nodePath === path) {
+                const content = treeNode.querySelector('.tree-content');
+                if (content) {
+                    content.classList.add('selected');
+                    // Scroll into view if needed
+                    content.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+                break;
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // --- LocalStorage Persistence ---
+    function saveStateToStorage() {
+        try {
+            // Save XML content and filename
+            if (xmlRawContent) {
+                localStorage.setItem(STORAGE_KEYS.XML_CONTENT, xmlRawContent);
+            }
+            if (xmlFilename) {
+                localStorage.setItem(STORAGE_KEYS.XML_FILENAME, xmlFilename);
+            }
+            
+            // Save tree panel states
+            localStorage.setItem(STORAGE_KEYS.TREE_SEARCH_TEXT, treeSearchText);
+            localStorage.setItem(STORAGE_KEYS.TREE_SEARCH_SCOPE, treeSearchScope);
+            localStorage.setItem(STORAGE_KEYS.TREE_SORT_STATE, treeSortState);
+            localStorage.setItem(STORAGE_KEYS.TREE_EXPANDED, JSON.stringify(treeExpanded));
+            
+            // Save selected node path
+            if (currentNodePath) {
+                localStorage.setItem(STORAGE_KEYS.SELECTED_NODE_PATH, currentNodePath);
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.SELECTED_NODE_PATH);
+            }
+            
+            // Save detail panel states
+            localStorage.setItem(STORAGE_KEYS.DETAIL_SEARCH_TEXT, searchText);
+            localStorage.setItem(STORAGE_KEYS.DETAIL_SEARCH_SCOPE, searchScope);
+            localStorage.setItem(STORAGE_KEYS.DETAIL_SORT_STATE, sortState);
+            
+            // Save help schema
+            if (helpSchemaRaw) {
+                localStorage.setItem(STORAGE_KEYS.HELP_SCHEMA, helpSchemaRaw);
+            }
+            if (helpSchemaFilename) {
+                localStorage.setItem(STORAGE_KEYS.HELP_SCHEMA_FILENAME, helpSchemaFilename);
+            }
+            
+            // Save current view state
+            localStorage.setItem(STORAGE_KEYS.CURRENT_VIEW, currentView);
+        } catch (e) {
+            console.warn('Failed to save state to localStorage:', e);
+            // localStorage might be full or disabled
+        }
+    }
+
+    function restoreStateFromStorage() {
+        try {
+            // Restore help schema first (before rendering)
+            const savedHelpSchema = localStorage.getItem(STORAGE_KEYS.HELP_SCHEMA);
+            const savedHelpSchemaFilename = localStorage.getItem(STORAGE_KEYS.HELP_SCHEMA_FILENAME);
+            if (savedHelpSchema) {
+                try {
+                    const parsed = JSON.parse(savedHelpSchema);
+                    helpSchema = processHelpSchema(parsed);
+                    helpSchemaRaw = savedHelpSchema;
+                    helpSchemaFilename = savedHelpSchemaFilename || 'help-schema.json';
+                    
+                    // Update UI
+                    helpUploadBtn.classList.add('loaded');
+                    helpStatusText.textContent = helpSchemaFilename;
+                    helpStatusText.title = helpSchemaFilename;
+                } catch (e) {
+                    console.warn('Failed to restore help schema:', e);
+                }
+            }
+            
+            // Restore XML content
+            const savedXmlContent = localStorage.getItem(STORAGE_KEYS.XML_CONTENT);
+            const savedFilename = localStorage.getItem(STORAGE_KEYS.XML_FILENAME);
+            
+            // Restore tree panel states first (before rendering)
+            const savedTreeSearchText = localStorage.getItem(STORAGE_KEYS.TREE_SEARCH_TEXT);
+            const savedTreeSearchScope = localStorage.getItem(STORAGE_KEYS.TREE_SEARCH_SCOPE);
+            const savedTreeSortState = localStorage.getItem(STORAGE_KEYS.TREE_SORT_STATE);
+            const savedTreeExpanded = localStorage.getItem(STORAGE_KEYS.TREE_EXPANDED);
+            
+            // Restore detail panel states
+            const savedDetailSearchText = localStorage.getItem(STORAGE_KEYS.DETAIL_SEARCH_TEXT);
+            const savedDetailSearchScope = localStorage.getItem(STORAGE_KEYS.DETAIL_SEARCH_SCOPE);
+            const savedDetailSortState = localStorage.getItem(STORAGE_KEYS.DETAIL_SORT_STATE);
+            
+            // Restore selected node path
+            const savedNodePath = localStorage.getItem(STORAGE_KEYS.SELECTED_NODE_PATH);
+            
+            // Restore current view state
+            const savedCurrentView = localStorage.getItem(STORAGE_KEYS.CURRENT_VIEW);
+            
+            // Apply tree panel states
+            if (savedTreeSearchText !== null) {
+                treeSearchText = savedTreeSearchText;
+                treeSearchInput.value = savedTreeSearchText;
+            }
+            if (savedTreeSearchScope !== null) {
+                treeSearchScope = savedTreeSearchScope;
+                const treeRadio = document.querySelector(`input[name="tree-search-scope"][value="${savedTreeSearchScope}"]`);
+                if (treeRadio) treeRadio.checked = true;
+            }
+            if (savedTreeSortState !== null) {
+                treeSortState = savedTreeSortState;
+                // Update sort icon
+                if (treeSortState === 'asc') {
+                    treeSortIcon.textContent = '▲';
+                } else if (treeSortState === 'desc') {
+                    treeSortIcon.textContent = '▼';
+                } else {
+                    treeSortIcon.textContent = '↕';
+                }
+            }
+            if (savedTreeExpanded !== null) {
+                treeExpanded = JSON.parse(savedTreeExpanded);
+                // Update toggle button
+                if (treeExpanded) {
+                    treeToggleIcon.textContent = '⊟';
+                    treeToggleText.textContent = '折叠';
+                } else {
+                    treeToggleIcon.textContent = '⊞';
+                    treeToggleText.textContent = '展开';
+                }
+            }
+            
+            // Apply detail panel states
+            if (savedDetailSearchText !== null) {
+                searchText = savedDetailSearchText;
+                searchInput.value = savedDetailSearchText;
+            }
+            if (savedDetailSearchScope !== null) {
+                searchScope = savedDetailSearchScope;
+                const detailRadio = document.querySelector(`input[name="search-scope"][value="${savedDetailSearchScope}"]`);
+                if (detailRadio) detailRadio.checked = true;
+            }
+            if (savedDetailSortState !== null) {
+                sortState = savedDetailSortState;
+            }
+            
+            // Restore selected node path (will be used when tree is rendered)
+            if (savedNodePath !== null) {
+                currentNodePath = savedNodePath;
+            }
+            
+            // If we have saved XML content, parse and render it
+            if (savedXmlContent) {
+                xmlRawContent = savedXmlContent;
+                xmlFilename = savedFilename || 'Restored file';
+                
+                // Update drop zone text
+                dropZone.textContent = `File: ${xmlFilename}`;
+                
+                // Parse the XML
+                const parser = new DOMParser();
+                const parsedDoc = parser.parseFromString(savedXmlContent, "text/xml");
+                
+                // Check for parser errors
+                const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
+                                    parsedDoc.querySelector("parsererror");
+                if (parserError) {
+                    console.warn("Failed to restore XML from localStorage - parse error");
+                    clearStoredState();
+                    return;
+                }
+                
+                // Check if we have a valid document element
+                if (!parsedDoc.documentElement || parsedDoc.documentElement.nodeName === "html") {
+                    console.warn("Failed to restore XML from localStorage - invalid structure");
+                    clearStoredState();
+                    return;
+                }
+                
+                // Store and render
+                xmlDoc = parsedDoc;
+                renderTree(xmlDoc);
+                
+                // Apply expand/collapse state to all nodes after rendering
+                if (treeExpanded) {
+                    const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+                    treeNodes.forEach(node => {
+                        node.classList.add('expanded');
+                    });
+                }
+                
+                // Restore selected node and show its details
+                if (currentNodePath && xmlDoc) {
+                    const xmlNode = findXmlNodeByPath(xmlDoc, currentNodePath);
+                    if (xmlNode) {
+                        currentNode = xmlNode;
+                        showNodeDetails(xmlNode);
+                        
+                        // Also highlight the node in the tree
+                        setTimeout(() => {
+                            restoreNodeSelection(currentNodePath);
+                            // Highlight parent path
+                            highlightParentPath(currentNodePath);
+                        }, 0);
+                    }
+                }
+                
+                // Restore view state (tree vs xml)
+                if (savedCurrentView && savedCurrentView !== 'tree') {
+                    // Switch to saved view
+                    currentView = savedCurrentView;
+                    viewTabs.forEach(tab => {
+                        tab.classList.toggle('active', tab.dataset.view === savedCurrentView);
+                    });
+                    treeViewContainer.classList.toggle('active', savedCurrentView === 'tree');
+                    xmlViewContainer.classList.toggle('active', savedCurrentView === 'xml');
+                    
+                    // If XML view, render it
+                    if (savedCurrentView === 'xml') {
+                        renderXmlView();
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to restore state from localStorage:', e);
+        }
+    }
+
+    function clearStoredState() {
+        Object.values(STORAGE_KEYS).forEach(key => {
+            localStorage.removeItem(key);
+        });
+    }
+
+    // Find XML node by path (e.g., "root.parent.child")
+    function findXmlNodeByPath(doc, path) {
+        if (!path || !doc) return null;
+        
+        const parts = path.split('.');
+        let current = doc.documentElement;
+        
+        // First part should be the root element
+        if (parts[0] !== current.nodeName) return null;
+        
+        // Traverse the path
+        for (let i = 1; i < parts.length; i++) {
+            const targetName = parts[i];
+            let found = false;
+            
+            for (let child of current.children) {
+                if (child.nodeName === targetName) {
+                    current = child;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) return null;
+        }
+        
+        return current;
+    }
+
+    // Highlight parent path in tree after restore
+    function highlightParentPath(path) {
+        if (!path) return;
+        
+        const treeNodes = treeContainer.querySelectorAll('.tree-node');
+        const parts = path.split('.');
+        
+        // Build all parent paths
+        const parentPaths = [];
+        for (let i = 1; i < parts.length; i++) {
+            parentPaths.push(parts.slice(0, i).join('.'));
+        }
+        
+        // Highlight parent nodes and expand them
+        treeNodes.forEach(treeNode => {
+            const nodePath = treeNode.dataset.nodePath;
+            if (parentPaths.includes(nodePath)) {
+                const content = treeNode.querySelector(':scope > .tree-content');
+                if (content) {
+                    content.classList.add('parent-path');
+                }
+                // Ensure parent is expanded
+                treeNode.classList.add('expanded');
+            }
+        });
+    }
+
+    // --- Initialize: Restore state on page load ---
+    restoreStateFromStorage();
+
+    // =============================================
+    // Additional Tauri Functions (Save, Menu Integration)
+    // =============================================
+    
+    if (isTauri && tauriInvoke) {
+        // Save XML file
+        window.tauriSaveFile = async function() {
+            if (!xmlRawContent) {
+                await tauriDialogMessage('没有可保存的内容', { title: 'Warning', kind: 'warning' });
+                return;
+            }
+            
+            try {
+                if (currentFilePath) {
+                    // Save to existing path
+                    await tauriWriteTextFile(currentFilePath, xmlRawContent);
+                    await tauriDialogMessage('文件已保存', { title: 'Success', kind: 'info' });
+                } else {
+                    // No path, use Save As
+                    await window.tauriSaveFileAs();
+                }
+            } catch (err) {
+                console.error('Error saving file:', err);
+                await tauriDialogMessage('保存文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+            }
+        };
+        
+        // Save As
+        window.tauriSaveFileAs = async function() {
+            if (!xmlRawContent) {
+                await tauriDialogMessage('没有可保存的内容', { title: 'Warning', kind: 'warning' });
+                return;
+            }
+            
+            try {
+                const filePath = await tauriDialogSave({
+                    filters: [{
+                        name: 'XML Files',
+                        extensions: ['xml']
+                    }],
+                    defaultPath: xmlFilename || 'document.xml'
+                });
+                
+                if (filePath) {
+                    await tauriWriteTextFile(filePath, xmlRawContent);
+                    currentFilePath = filePath;
+                    
+                    // Update filename
+                    const filename = filePath.split('/').pop().split('\\').pop();
+                    xmlFilename = filename;
+                    dropZone.textContent = `File: ${filename}`;
+                    
+                    await tauriDialogMessage('文件已保存', { title: 'Success', kind: 'info' });
+                }
+            } catch (err) {
+                console.error('Error saving file:', err);
+                await tauriDialogMessage('保存文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+            }
+        };
+        
+        // --- Tree View Controls (for menu integration) ---
+        
+        window.expandAllNodes = function() {
+            treeExpanded = true;
+            treeToggleIcon.textContent = '⊟';
+            treeToggleText.textContent = '折叠';
+            
+            const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+            treeNodes.forEach(node => node.classList.add('expanded'));
+            saveStateToStorage();
+        };
+        
+        window.collapseAllNodes = function() {
+            treeExpanded = false;
+            treeToggleIcon.textContent = '⊞';
+            treeToggleText.textContent = '展开';
+            
+            const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+            treeNodes.forEach(node => node.classList.remove('expanded'));
+            saveStateToStorage();
+        };
+        
+        window.toggleTreePanel = function() {
+            const treePanel = document.getElementById('tree-panel');
+            if (treePanel) {
+                treePanel.style.display = treePanel.style.display === 'none' ? 'flex' : 'none';
+            }
+        };
+        
+        // --- About Dialog ---
+        
+        window.showAboutDialog = async function() {
+            await tauriDialogMessage(
+                'XML Navigator v1.0.0\n\n' +
+                '一个现代化的 XML 文件浏览器和编辑器\n' +
+                '支持树形视图、语法高亮和帮助配置验证\n\n' +
+                'Built with Tauri + Monaco Editor',
+                { title: 'About XML Navigator', kind: 'info' }
+            );
+        };
+        
+        // --- Auto Update ---
+        
+        window.checkForUpdates = async function() {
+            try {
+                // Tauri v2 updater API
+                const tauriUpdater = window.__TAURI__.updater;
+                if (tauriUpdater && tauriUpdater.check) {
+                    const update = await tauriUpdater.check();
+                    if (update && update.available) {
+                        const shouldUpdate = await tauriDialogAsk(
+                            `发现新版本 ${update.version}，是否现在更新？`,
+                            { title: 'Update Available', kind: 'info' }
+                        );
+                    
+                        if (shouldUpdate) {
+                            await update.downloadAndInstall();
+                        }
+                    } else {
+                        await tauriDialogMessage('当前已是最新版本', { title: 'Check for Updates', kind: 'info' });
+                    }
+                } else {
+                    await tauriDialogMessage('更新功能未配置', { title: 'Info', kind: 'info' });
+                }
+            } catch (err) {
+                console.error('Update check failed:', err);
+                await tauriDialogMessage('检查更新失败: ' + err.message, { title: 'Error', kind: 'error' });
+            }
+        };
+    }
+</script>
+
+</body>
+</html>

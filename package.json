@@ -1,0 +1,19 @@
+{
+  "name": "xml-navigator",
+  "version": "1.0.0",
+  "description": "Modern XML Browser - A desktop application for browsing and editing XML files",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.55.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  },
+  "author": "",
+  "license": "MIT"
+}
