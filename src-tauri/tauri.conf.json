@@ -63,28 +63,12 @@
         "type": "downloadBootstrapper"
       },
       "wix": {
-        "language": "en-US",
-        "template": null,
-        "fragmentPaths": [],
-        "componentRefs": [],
-        "featureRefs": [],
-        "mergeRefs": [],
-        "skipWebviewInstall": false,
-        "license": null,
-        "enableElevatedUpdateInstall": false,
-        "bannerPath": null,
-        "dialogImagePath": null
+        "language": "en-US"
       },
       "nsis": {
-        "license": null,
-        "headerImage": null,
-        "sidebarImage": null,
-        "installerIcon": null,
         "installMode": "perUser",
         "languages": ["en-US"],
-        "displayLanguageSelector": false,
-        "compression": "lzma",
-        "template": null
+        "compression": "lzma"
       }
     }
   },
