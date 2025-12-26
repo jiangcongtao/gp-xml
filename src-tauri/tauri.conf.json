@@ -61,14 +61,6 @@
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
-      },
-      "wix": {
-        "language": "en-US"
-      },
-      "nsis": {
-        "installMode": "perUser",
-        "languages": ["en-US"],
-        "compression": "lzma"
       }
     }
   },
