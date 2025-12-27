@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MODERN XML BROWSER</title>
+    <title>XML Navigator</title>
     <!-- Monaco Editor (VS Code 的编辑器) -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <style>
@@ -939,9 +939,9 @@
 <body>
 
 <header>
-    <h1>XML BROWSER</h1>
+    <h1>XML Navigator</h1>
     <div id="drop-zone">
-        Drag & Drop XML file here or Click to Upload
+        DRAG & DROP XML FILE HERE OR CLICK TO UPLOAD
     </div>
     <input type="file" id="file-input" accept=".xml" style="display: none;">
     <div class="help-upload-wrapper" id="help-drop-zone">
@@ -1010,7 +1010,7 @@
         <!-- Tree Container -->
         <div class="tree-container" id="tree-container">
             <div class="empty-state" style="height: auto; padding-top: 2rem;">
-                No file loaded.
+                NO FILE LOADED.
             </div>
         </div>
     </div>
@@ -1050,7 +1050,7 @@
                 <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                <p>Select a node from the tree to view details</p>
+                <p>SELECT A NODE FROM THE TREE TO VIEW DETAILS</p>
             </div>
         </div>
     </div>
@@ -2325,7 +2325,7 @@
         if (allData.length === 0) {
             detailContent.innerHTML = `
                 <div class="empty-state">
-                    <p>No direct attributes or leaf children values.</p>
+                    <p>NO DIRECT ATTRIBUTES OR LEAF CHILDREN VALUES.</p>
                 </div>`;
             updateSearchInfo(0, 0);
             return;
@@ -2451,7 +2451,7 @@
                 <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                <p>Select a node from the tree to view details</p>
+                <p>SELECT A NODE FROM THE TREE TO VIEW DETAILS</p>
             </div>`;
     }
 
