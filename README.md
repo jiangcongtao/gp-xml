@@ -1,6 +1,6 @@
 # XML Navigator
 
-A modern desktop application for browsing and editing XML files, built with Tauri and Monaco Editor.
+A modern desktop application for exploring XML files, built with Tauri and Monaco Editor.
 
 ## Features
 
