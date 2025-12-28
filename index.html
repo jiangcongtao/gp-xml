@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XML Navigator</title>
-    <!-- Monaco Editor (VS Code 的编辑器) -->
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <!-- Monaco Editor (VS Code 的编辑器) - 本地资源 -->
+    <script src="monaco/vs/loader.js"></script>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -15,6 +17,17 @@
             --border-color: #e5e7eb;
             --hover-color: #eff6ff;
             --selected-bg: #dbeafe;
+        }
+
+        /* Dark Theme */
+        [data-theme="dark"] {
+            --primary-color: #60a5fa;
+            --bg-color: #111827;
+            --panel-bg: #1f2937;
+            --text-color: #f9fafb;
+            --border-color: #374151;
+            --hover-color: #1f2937;
+            --selected-bg: #1e3a8a;
         }
 
         * {
@@ -43,6 +56,8 @@
             align-items: center;
             flex-shrink: 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         h1 {
@@ -52,20 +67,96 @@
         }
 
         #drop-zone {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
             border: 2px dashed var(--border-color);
             border-radius: 0.5rem;
             padding: 0.5rem 1.5rem;
-            text-align: center;
             transition: all 0.2s ease;
             cursor: pointer;
-            color: #6b7280;
+            color: var(--text-color);
             font-size: 0.9rem;
+            flex: 1;
+            min-width: 200px;
+            opacity: 0.7;
+        }
+
+        #drop-zone .material-symbols-outlined {
+            font-size: 1.2rem;
         }
 
         #drop-zone.dragover {
             border-color: var(--primary-color);
             background-color: var(--hover-color);
             color: var(--primary-color);
+            opacity: 1;
+        }
+
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background: var(--panel-bg);
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .header-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: var(--hover-color);
+            transform: translateY(-1px);
+        }
+
+        /* Material Symbols Icons */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 1.2rem;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: 'liga';
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        h1 .material-symbols-outlined {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .header-btn .material-symbols-outlined {
+            font-size: 1.2rem;
+        }
+
+        .view-tab .material-symbols-outlined {
+            font-size: 1.2rem;
         }
 
         /* Main Layout */
@@ -437,38 +528,43 @@
             border-style: dashed;
             background-color: var(--hover-color);
             color: var(--primary-color);
+            opacity: 1;
         }
 
         .help-upload-btn {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            border: 1px solid var(--border-color);
+            border: 2px dashed var(--border-color);
             border-radius: 0.5rem;
-            background: white;
+            background: var(--panel-bg);
             cursor: pointer;
-            font-size: 0.85rem;
-            color: #6b7280;
+            font-size: 0.9rem;
+            color: var(--text-color);
             transition: all 0.2s ease;
             max-width: 280px;
+            opacity: 0.7;
         }
 
         .help-upload-btn:hover {
             border-color: var(--primary-color);
             color: var(--primary-color);
             background-color: var(--hover-color);
+            opacity: 1;
         }
 
         .help-upload-btn.loaded {
             border-color: #10b981;
+            border-style: solid;
             color: #10b981;
             background-color: #ecfdf5;
+            opacity: 1;
         }
 
-        .help-icon {
-            font-size: 1rem;
-            flex-shrink: 0;
+        .help-upload-btn .material-symbols-outlined {
+            font-size: 1.2rem;
         }
 
         #help-status-text {
@@ -682,9 +778,160 @@
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
             }
-            .help-upload-btn span:not(.help-icon) {
+            .help-upload-btn span:not(.material-symbols-outlined) {
                 display: none;
             }
+            header {
+                padding: 0.75rem 1rem;
+            }
+            .header-btn span:not(.material-symbols-outlined) {
+                display: none;
+            }
+            .header-controls {
+                gap: 0.25rem;
+            }
+        }
+
+        /* ==================== */
+        /* Modal Styles         */
+        /* ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+        }
+
+        .modal.visible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            position: relative;
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--panel-bg);
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            background: var(--hover-color);
+            color: var(--primary-color);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .modal-body h3 {
+            color: var(--primary-color);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body ul {
+            margin: 0.5rem 0 1rem 1.5rem;
+            padding: 0;
+        }
+
+        .modal-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body p {
+            margin-bottom: 0.75rem;
+        }
+
+        .modal-body a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-body a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--bg-color);
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .author-info strong {
+            color: var(--text-color);
         }
 
         /* ==================== */
@@ -724,10 +971,6 @@
             color: var(--primary-color);
             border-bottom-color: var(--primary-color);
             background-color: transparent;
-        }
-
-        .tab-icon {
-            font-size: 1rem;
         }
 
         /* View Container */
@@ -916,7 +1159,7 @@
                 font-size: 0.85rem;
             }
             
-            .view-tab span:not(.tab-icon) {
+            .view-tab span:not(.material-symbols-outlined) {
                 display: none;
             }
             
@@ -939,34 +1182,94 @@
 <body>
 
 <header>
-    <h1>XML Navigator</h1>
+    <h1><span class="material-symbols-outlined">code</span>XML Navigator</h1>
     <div id="drop-zone">
-        DRAG & DROP XML FILE HERE OR CLICK TO UPLOAD
+        <span class="material-symbols-outlined">upload_file</span>
+        <span id="drop-zone-text">DRAG & DROP XML FILE HERE OR CLICK TO UPLOAD</span>
     </div>
     <input type="file" id="file-input" accept=".xml" style="display: none;">
     <div class="help-upload-wrapper" id="help-drop-zone">
         <button id="help-upload-btn" class="help-upload-btn">
-            <span class="help-icon">📖</span>
+            <span class="material-symbols-outlined">schema</span>
             <span id="help-status-text">加载帮助配置</span>
         </button>
         <input type="file" id="help-file-input" accept=".json" style="display: none;">
+    </div>
+    <div class="header-controls">
+        <button id="reset-btn" class="header-btn">
+            <span class="material-symbols-outlined">refresh</span>
+            <span data-i18n="reset">重置</span>
+        </button>
+        <button id="help-btn" class="header-btn">
+            <span class="material-symbols-outlined">help</span>
+            <span data-i18n="help">帮助</span>
+        </button>
+        <button id="theme-toggle-btn" class="header-btn">
+            <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+            <span data-i18n="theme">主题</span>
+        </button>
+        <button id="lang-toggle-btn" class="header-btn">
+            <span class="material-symbols-outlined">language</span>
+            <span data-i18n="language">语言</span>
+        </button>
     </div>
 </header>
 
 <!-- View Tabs -->
 <div class="view-tabs">
     <button class="view-tab active" data-view="tree">
-        <span class="tab-icon">🌲</span>
-        <span>TREE VIEW</span>
+        <span class="material-symbols-outlined">account_tree</span>
+        <span data-i18n="treeView">树形视图</span>
     </button>
     <button class="view-tab" data-view="xml">
-        <span class="tab-icon">📄</span>
-        <span>XML VIEW</span>
+        <span class="material-symbols-outlined">code</span>
+        <span data-i18n="xmlView">XML 视图</span>
     </button>
 </div>
 
 <!-- Help Tooltip Element (also shows validation errors) -->
 <div id="help-tooltip" class="help-tooltip"></div>
+
+<!-- Help Modal -->
+<div id="help-modal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>XML Navigator</h2>
+            <button class="modal-close" id="help-modal-close">✕</button>
+        </div>
+        <div class="modal-body" id="help-modal-body">
+            <h3 data-i18n="aboutApp">关于 XML Navigator</h3>
+            <p data-i18n="feature7">一个现代化的 XML 文件浏览器和编辑器，支持树形视图、语法高亮和帮助配置验证。</p>
+            
+            <h3 data-i18n="features">功能特性</h3>
+            <ul>
+                <li data-i18n="feature1">树形视图：以层级结构浏览 XML 文档</li>
+                <li data-i18n="feature2">详情面板：查看节点属性和子元素的值</li>
+                <li data-i18n="feature3">搜索与过滤：快速定位特定的节点或属性</li>
+                <li data-i18n="feature4">帮助配置：上传 JSON 配置文件进行字段验证</li>
+                <li data-i18n="feature5">主题切换：支持浅色和深色模式</li>
+                <li data-i18n="feature6">语言切换：支持中文和英文界面</li>
+                <li data-i18n="feature7">XML 视图：使用 Monaco 编辑器查看原始 XML</li>
+            </ul>
+            
+            <h3 data-i18n="usage">使用方法</h3>
+            <ul>
+                <li data-i18n="usage1">点击或拖放上传 XML 文件</li>
+                <li data-i18n="usage2">在树形视图中点击节点查看详情</li>
+                <li data-i18n="usage3">使用搜索框过滤节点或属性</li>
+                <li data-i18n="usage4">可选：上传帮助配置文件启用字段验证</li>
+            </ul>
+            
+            <h3 data-i18n="author">作者</h3>
+            <div class="author-info">
+                <span><strong data-i18n="authorInfo">Nick Jiang</strong></span>
+                <span>-</span>
+                <a href="mailto:congtao.jiang@outlook.com">congtao.jiang@outlook.com</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <main>
     <!-- Tree View Container -->
@@ -978,6 +1281,7 @@
                 <input 
                     type="text" 
                     id="tree-search-input" 
+                    data-i18n="searchNodePlaceholder"
                     placeholder="搜索节点名称或值..."
                 />
             </div>
@@ -985,24 +1289,24 @@
                 <div class="tree-scope-group">
                     <label>
                         <input type="radio" name="tree-search-scope" value="name" />
-                        名称
+                        <span data-i18n="searchName">名称</span>
                     </label>
                     <label>
                         <input type="radio" name="tree-search-scope" value="value" />
-                        值
+                        <span data-i18n="searchValue">值</span>
                     </label>
                     <label>
                         <input type="radio" name="tree-search-scope" value="both" checked />
-                        全部
+                        <span data-i18n="searchBoth">全部</span>
                     </label>
                 </div>
                 <button class="tree-sort-btn" id="tree-sort-btn">
                     <span class="tree-sort-icon" id="tree-sort-icon">↕</span>
-                    <span>排序</span>
+                    <span data-i18n="sort">排序</span>
                 </button>
                 <button class="tree-sort-btn" id="tree-toggle-btn">
                     <span class="tree-sort-icon" id="tree-toggle-icon">⊞</span>
-                    <span id="tree-toggle-text">展开</span>
+                    <span id="tree-toggle-text" data-i18n="expand">展开</span>
                 </button>
             </div>
         </div>
@@ -1023,21 +1327,22 @@
                     <input 
                         type="text" 
                         id="search-input" 
+                        data-i18n="searchPropertyPlaceholder"
                         placeholder="搜索 PROPERTY/TAG 或 VALUE..."
                     />
                 </div>
                 <div class="search-scope">
                     <label>
                         <input type="radio" name="search-scope" value="property" />
-                        仅 PROPERTY/TAG
+                        <span data-i18n="propertyTag">仅 PROPERTY/TAG</span>
                     </label>
                     <label>
                         <input type="radio" name="search-scope" value="value" />
-                        仅 VALUE
+                        <span data-i18n="valueOnly">仅 VALUE</span>
                     </label>
                     <label>
                         <input type="radio" name="search-scope" value="both" checked />
-                        PROPERTY/TAG 或 VALUE
+                        <span data-i18n="propertyOrValue">PROPERTY/TAG 或 VALUE</span>
                     </label>
                 </div>
             </div>
@@ -1062,11 +1367,11 @@
         <div class="xml-toolbar">
             <button class="xml-toolbar-btn" id="xml-fold-all">
                 <span class="btn-icon">▼</span>
-                <span>折叠全部</span>
+                <span data-i18n="foldAll">折叠全部</span>
             </button>
             <button class="xml-toolbar-btn" id="xml-unfold-all">
                 <span class="btn-icon">▶</span>
-                <span>展开全部</span>
+                <span data-i18n="unfoldAll">展开全部</span>
             </button>
             <span class="xml-info" id="xml-info"></span>
         </div>
@@ -1086,10 +1391,10 @@
     window.monacoEditor = null;
     window.monacoReady = false;
     
-    // 配置 Monaco 加载路径
+    // 配置 Monaco 加载路径 (本地资源)
     require.config({ 
         paths: { 
-            'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' 
+            'vs': 'monaco/vs' 
         }
     });
     
@@ -1101,6 +1406,7 @@
 
     // --- State & Elements ---
     const dropZone = document.getElementById('drop-zone');
+    const dropZoneText = document.getElementById('drop-zone-text');
     const fileInput = document.getElementById('file-input');
     const treePanel = document.getElementById('tree-panel');
     const treeContainer = document.getElementById('tree-container');
@@ -1123,28 +1429,36 @@
     const helpStatusText = document.getElementById('help-status-text');
     const helpTooltip = document.getElementById('help-tooltip');
     
-    let xmlDoc = null;
-    let xmlRawContent = null; // Store raw XML string for localStorage persistence
-    let xmlFilename = null; // Store filename for display after restore
-    let currentNode = null;
-    let currentNodePath = null; // Store path for re-selection
-    let sortState = 'natural'; // 'natural', 'asc', 'desc' (for detail panel)
-    let searchText = ''; // 搜索文本 (for detail panel)
-    let searchScope = 'both'; // 'property', 'value', 'both' (for detail panel)
+    // New UI elements
+    const helpModal = document.getElementById('help-modal');
+    const helpModalClose = document.getElementById('help-modal-close');
+    const resetBtn = document.getElementById('reset-btn');
+    const helpBtn = document.getElementById('help-btn');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const langToggleBtn = document.getElementById('lang-toggle-btn');
+    
+    var xmlDoc = null;
+    var xmlRawContent = null; // Store raw XML string for localStorage persistence
+    var xmlFilename = null; // Store filename for display after restore
+    var currentNode = null;
+    var currentNodePath = null; // Store path for re-selection
+    var sortState = 'natural'; // 'natural', 'asc', 'desc' (for detail panel)
+    var searchText = ''; // 搜索文本 (for detail panel)
+    var searchScope = 'both'; // 'property', 'value', 'both' (for detail panel)
     // Tree panel states
-    let treeSearchText = '';
-    let treeSearchScope = 'both'; // 'name', 'value', 'both'
-    let treeSortState = 'natural'; // 'natural', 'asc', 'desc'
-    let treeExpanded = false; // false = collapsed, true = expanded
+    var treeSearchText = '';
+    var treeSearchScope = 'both'; // 'name', 'value', 'both'
+    var treeSortState = 'natural'; // 'natural', 'asc', 'desc'
+    var treeExpanded = false; // false = collapsed, true = expanded
     
     // Help schema state
-    let helpSchema = null; // Parsed help schema
-    let helpSchemaRaw = null; // Raw JSON string for persistence
-    let helpSchemaFilename = null; // Help schema filename
+    var helpSchema = null; // Parsed help schema
+    var helpSchemaRaw = null; // Raw JSON string for persistence
+    var helpSchemaFilename = null; // Help schema filename
     
     // View state
-    let currentView = 'tree'; // 'tree' | 'xml'
-    let xmlViewRendered = false; // Track if XML view needs re-render
+    var currentView = 'tree'; // 'tree' | 'xml'
+    var xmlViewRendered = false; // Track if XML view needs re-render
     
     // Help drop zone element
     const helpDropZone = document.getElementById('help-drop-zone');
@@ -1156,6 +1470,279 @@
     const xmlContentEl = document.getElementById('xml-content');
     const xmlInfoEl = document.getElementById('xml-info');
 
+    // --- Theme & Language State ---
+    var currentTheme = 'light'; // 'light' | 'dark'
+    var currentLang = 'zh'; // 'zh' | 'en'
+    
+    // --- Translations Dictionary ---
+    const translations = {
+        zh: {
+            // Application Name (don't translate)
+            appName: 'XML Navigator',
+            
+            // Header
+            dropZoneText: '拖放 XML 文件到这里或点击上传',
+            dropZoneTextTauri: '点击打开 XML 文件或拖放文件',
+            loadHelpConfig: '加载模式',
+            reset: '重置',
+            help: '帮助',
+            theme: '主题',
+            language: '语言',
+            
+            // View Tabs
+            treeView: '树形视图',
+            xmlView: 'XML 视图',
+            
+            // Tree Controls
+            searchNodePlaceholder: '搜索节点名称或值...',
+            searchName: '名称',
+            searchValue: '值',
+            searchBoth: '全部',
+            sort: '排序',
+            expand: '展开',
+            collapse: '折叠',
+            
+            // Detail Panel
+            searchPropertyPlaceholder: '搜索 PROPERTY/TAG 或 VALUE...',
+            propertyTag: '仅 PROPERTY/TAG',
+            valueOnly: '仅 VALUE',
+            propertyOrValue: 'PROPERTY/TAG 或 VALUE',
+            propertyTagHeader: 'PROPERTY / TAG',
+            valueHeader: 'VALUE',
+            
+            // XML View
+            foldAll: '折叠全部',
+            unfoldAll: '展开全部',
+            xmlEmptyState: '加载 XML 文件后在此查看原始内容',
+            loadingEditor: '正在加载代码编辑器...',
+            editorInitFailed: '初始化编辑器失败',
+            checkConsole: '请检查浏览器控制台了解详情',
+            lines: '行',
+            
+            // Empty States
+            noFileLoaded: '未加载文件。',
+            selectNode: '从树中选择一个节点以查看详情',
+            noMatchingNodes: '未找到匹配的节点。',
+            noAttributesOrChildren: '没有直接属性或叶子节点的值。',
+            noMatchingResults: '没有匹配的结果',
+            
+            // Search Info
+            showingResults: '显示',
+            of: '/',
+            items: '项',
+            
+            // Validation Errors
+            requiredField: '此字段为必填项',
+            formatMismatch: '格式不匹配，期望格式',
+            typeError: '类型错误',
+            expectInteger: '期望整数，实际值',
+            expectNumber: '期望数字，实际值',
+            expectBoolean: '期望布尔值，实际值',
+            dateFormatError: '日期格式错误',
+            unrecognizedDateFormat: '无法识别的日期格式',
+            expectFormat: '期望',
+            actualValue: '实际值',
+            validationErrors: '验证错误',
+            
+            // Tooltip Labels
+            type: '类型',
+            format: '格式',
+            example: '示例',
+            required: '必填',
+            yes: '是',
+            no: '否',
+            description: '描述',
+            
+            // Messages
+            invalidXmlFile: '请上传有效的 XML 文件。',
+            xmlParseError: 'XML 解析错误',
+            invalidXmlStructure: '无效的 XML 文档结构',
+            treeRenderError: '树渲染错误',
+            detailResetError: '重置详情面板错误',
+            fileReadError: '读取文件错误。',
+            invalidHelpFormat: '帮助配置文件格式无效：缺少 definitions 或 paths',
+            helpParseError: '帮助配置文件解析错误',
+            readHelpError: '读取帮助配置文件失败',
+            uploadJsonFile: '请上传 JSON 格式的帮助配置文件',
+            
+            // Tauri Messages
+            openFileFailed: '打开文件失败',
+            openHelpFileFailed: '打开帮助配置文件失败',
+            readFileFailed: '读取拖放文件失败',
+            dragXmlFile: '请拖放 XML 格式的文件',
+            dragJsonFile: '请上传 JSON 格式的帮助配置文件',
+            noContentToSave: '没有可保存的内容',
+            fileSaved: '文件已保存',
+            saveFileFailed: '保存文件失败',
+            updateAvailable: '发现新版本',
+            updateNow: '是否现在更新？',
+            alreadyLatest: '当前已是最新版本',
+            updateNotConfigured: '更新功能未配置',
+            checkUpdateFailed: '检查更新失败',
+            
+            // Help Modal
+            helpTitle: '帮助',
+            aboutApp: '关于 XML Navigator',
+            features: '功能特性',
+            feature1: '树形视图：以层级结构浏览 XML 文档',
+            feature2: '详情面板：查看节点属性和子元素的值',
+            feature3: '搜索与过滤：快速定位特定的节点或属性',
+            feature4: '帮助配置：上传 JSON 配置文件进行字段验证',
+            feature5: '主题切换：支持浅色和深色模式',
+            feature6: '语言切换：支持中文和英文界面',
+            feature7: 'XML 视图：使用 Monaco 编辑器查看原始 XML',
+            usage: '使用方法',
+            usage1: '点击或拖放上传 XML 文件',
+            usage2: '在树形视图中点击节点查看详情',
+            usage3: '使用搜索框过滤节点或属性',
+            usage4: '可选：上传帮助配置文件启用字段验证',
+            author: '作者',
+            authorInfo: 'Nick Jiang',
+            close: '关闭',
+            
+            // Reset Confirmation
+            resetConfirmTitle: '确认重置',
+            resetConfirmMsg: '确定要重置吗？这将清除已加载的 XML 文件和帮助配置，但会保留您的主题和语言设置。',
+            confirm: '确认',
+            cancel: '取消'
+        },
+        en: {
+            // Application Name (don't translate)
+            appName: 'XML Navigator',
+            
+            // Header
+            dropZoneText: 'Drag & drop XML file here or click to upload',
+            dropZoneTextTauri: 'Click to open XML file or drag & drop',
+            loadHelpConfig: 'Load Schema',
+            reset: 'Reset',
+            help: 'Help',
+            theme: 'Theme',
+            language: 'Language',
+            
+            // View Tabs
+            treeView: 'Tree View',
+            xmlView: 'XML View',
+            
+            // Tree Controls
+            searchNodePlaceholder: 'Search node name or value...',
+            searchName: 'Name',
+            searchValue: 'Value',
+            searchBoth: 'Both',
+            sort: 'Sort',
+            expand: 'Expand',
+            collapse: 'Collapse',
+            
+            // Detail Panel
+            searchPropertyPlaceholder: 'Search PROPERTY/TAG or VALUE...',
+            propertyTag: 'Property/Tag Only',
+            valueOnly: 'Value Only',
+            propertyOrValue: 'Property/Tag or Value',
+            propertyTagHeader: 'PROPERTY / TAG',
+            valueHeader: 'VALUE',
+            
+            // XML View
+            foldAll: 'Fold All',
+            unfoldAll: 'Unfold All',
+            xmlEmptyState: 'Load an XML file to view raw content here',
+            loadingEditor: 'Loading code editor...',
+            editorInitFailed: 'Failed to initialize editor',
+            checkConsole: 'Check browser console for details',
+            lines: 'lines',
+            
+            // Empty States
+            noFileLoaded: 'No file loaded.',
+            selectNode: 'Select a node from the tree to view details',
+            noMatchingNodes: 'No matching nodes found.',
+            noAttributesOrChildren: 'No direct attributes or leaf children values.',
+            noMatchingResults: 'No matching results',
+            
+            // Search Info
+            showingResults: 'Showing',
+            of: '/',
+            items: 'items',
+            
+            // Validation Errors
+            requiredField: 'This field is required',
+            formatMismatch: 'Format mismatch, expected format',
+            typeError: 'Type error',
+            expectInteger: 'Expected integer, actual value',
+            expectNumber: 'Expected number, actual value',
+            expectBoolean: 'Expected boolean, actual value',
+            dateFormatError: 'Date format error',
+            unrecognizedDateFormat: 'Unrecognized date format',
+            expectFormat: 'Expected',
+            actualValue: 'actual value',
+            validationErrors: 'Validation Errors',
+            
+            // Tooltip Labels
+            type: 'Type',
+            format: 'Format',
+            example: 'Example',
+            required: 'Required',
+            yes: 'Yes',
+            no: 'No',
+            description: 'Description',
+            
+            // Messages
+            invalidXmlFile: 'Please upload a valid XML file.',
+            xmlParseError: 'XML parse error',
+            invalidXmlStructure: 'Invalid XML document structure',
+            treeRenderError: 'Tree render error',
+            detailResetError: 'Detail panel reset error',
+            fileReadError: 'Error reading file.',
+            invalidHelpFormat: 'Invalid help config format: missing definitions or paths',
+            helpParseError: 'Help config parse error',
+            readHelpError: 'Failed to read help config file',
+            uploadJsonFile: 'Please upload a JSON format help config file',
+            
+            // Tauri Messages
+            openFileFailed: 'Failed to open file',
+            openHelpFileFailed: 'Failed to open help config file',
+            readFileFailed: 'Failed to read dropped file',
+            dragXmlFile: 'Please drag and drop an XML file',
+            dragJsonFile: 'Please upload a JSON format help config file',
+            noContentToSave: 'No content to save',
+            fileSaved: 'File saved',
+            saveFileFailed: 'Failed to save file',
+            updateAvailable: 'New version available',
+            updateNow: 'Update now?',
+            alreadyLatest: 'Already on latest version',
+            updateNotConfigured: 'Update feature not configured',
+            checkUpdateFailed: 'Failed to check for updates',
+            
+            // Help Modal
+            helpTitle: 'Help',
+            aboutApp: 'About XML Navigator',
+            features: 'Features',
+            feature1: 'Tree View: Browse XML documents in hierarchical structure',
+            feature2: 'Detail Panel: View node attributes and child element values',
+            feature3: 'Search & Filter: Quickly locate specific nodes or attributes',
+            feature4: 'Help Config: Upload JSON config file for field validation',
+            feature5: 'Theme Toggle: Support light and dark mode',
+            feature6: 'Language Switch: Support Chinese and English interface',
+            feature7: 'XML View: View raw XML with Monaco editor',
+            usage: 'Usage',
+            usage1: 'Click or drag-drop to upload XML file',
+            usage2: 'Click node in tree view to see details',
+            usage3: 'Use search box to filter nodes or attributes',
+            usage4: 'Optional: Upload help config file to enable field validation',
+            author: 'Author',
+            authorInfo: 'Nick Jiang',
+            close: 'Close',
+            
+            // Reset Confirmation
+            resetConfirmTitle: 'Confirm Reset',
+            resetConfirmMsg: 'Are you sure you want to reset? This will clear the loaded XML file and help config, but will keep your theme and language settings.',
+            confirm: 'Confirm',
+            cancel: 'Cancel'
+        }
+    };
+    
+    // Translation function
+    function t(key) {
+        return translations[currentLang]?.[key] || key;
+    }
+    
     // --- LocalStorage Keys ---
     const STORAGE_KEYS = {
         XML_CONTENT: 'xml_browser_xml_content',
@@ -1171,71 +1758,811 @@
         HELP_SCHEMA: 'xml_browser_help_schema',
         HELP_SCHEMA_FILENAME: 'xml_browser_help_schema_filename',
         CURRENT_VIEW: 'xml_browser_current_view',
-        XML_FOLD_STATE: 'xml_browser_xml_fold_state'
+        XML_FOLD_STATE: 'xml_browser_xml_fold_state',
+        CURRENT_THEME: 'xml_browser_current_theme',
+        CURRENT_LANG: 'xml_browser_current_lang'
     };
 
-    // --- Event Listeners ---
-    dropZone.addEventListener('click', () => fileInput.click());
+    // =============================================
+    // Translation & Theme Functions
+    // =============================================
     
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('dragover');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) {
-            handleFile(e.dataTransfer.files[0]);
+    // Apply translations to all elements with data-i18n attribute
+    function applyTranslations() {
+        // Update all elements with data-i18n attribute
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            const translation = t(key);
+            
+            // Handle different element types
+            if (el.tagName === 'INPUT' && el.type !== 'radio' && el.type !== 'checkbox') {
+                el.placeholder = translation;
+            } else {
+                el.textContent = translation;
+            }
+        });
+        
+        // Update drop zone text
+        if (isTauri) {
+            dropZoneText.textContent = xmlFilename ? xmlFilename : t('dropZoneTextTauri');
+        } else {
+            dropZoneText.textContent = xmlFilename ? xmlFilename : t('dropZoneText');
         }
-    });
+        
+        // Update help upload button text if no file loaded
+        if (!helpSchemaFilename) {
+            helpStatusText.textContent = t('loadHelpConfig');
+        }
+        
+        // Re-render tree and details if XML is loaded
+        if (xmlDoc) {
+            renderTree(xmlDoc);
+            if (currentNode) {
+                showNodeDetails(currentNode);
+            }
+        }
+        
+        // Update XML view info
+        if (xmlRawContent) {
+            updateXmlInfo();
+        }
+    }
+    
+    // Set theme
+    function setTheme(theme) {
+        currentTheme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Update Monaco editor theme if it exists
+        if (window.monacoEditor && window.monacoReady) {
+            const monacoTheme = theme === 'dark' ? 'vs-dark' : 'vs';
+            monaco.editor.setTheme(monacoTheme);
+        }
+        
+        // Update theme toggle icon
+        const themeIcon = document.getElementById('theme-icon');
+        if (themeIcon) {
+            themeIcon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+        }
+        
+        saveStateToStorage();
+    }
+    
+    // Toggle theme
+    function toggleTheme() {
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+    }
+    
+    // Set language
+    function setLanguage(lang) {
+        currentLang = lang;
+        applyTranslations();
+        saveStateToStorage();
+    }
+    
+    // Toggle language
+    function toggleLanguage() {
+        const newLang = currentLang === 'zh' ? 'en' : 'zh';
+        setLanguage(newLang);
+    }
+    
+    // Show help modal
+    function showHelpModal() {
+        helpModal.classList.add('visible');
+    }
+    
+    // Hide help modal
+    function hideHelpModal() {
+        helpModal.classList.remove('visible');
+    }
+    
+    // Reset application
+    function resetApplication() {
+        // Confirm with user
+        const confirmMsg = t('resetConfirmMsg');
+        const confirmed = confirm(confirmMsg);
+        
+        if (!confirmed) return;
+        
+        // Clear XML related data
+        xmlDoc = null;
+        xmlRawContent = null;
+        xmlFilename = null;
+        currentNode = null;
+        currentNodePath = null;
+        xmlViewRendered = false;
+        
+        // Clear help schema
+        helpSchema = null;
+        helpSchemaRaw = null;
+        helpSchemaFilename = null;
+        
+        // Reset UI states
+        if (isTauri) {
+            dropZoneText.textContent = t('dropZoneTextTauri');
+        } else {
+            dropZoneText.textContent = t('dropZoneText');
+        }
+        helpUploadBtn.classList.remove('loaded');
+        helpStatusText.textContent = t('loadHelpConfig');
+        
+        // Clear tree
+        treeContainer.innerHTML = `<div class="empty-state" style="height: auto; padding-top: 2rem;">${t('noFileLoaded')}</div>`;
+        treeControls.classList.remove('visible');
+        
+        // Reset detail view
+        resetDetailView();
+        
+        // Clear XML view
+        if (window.monacoEditor) {
+            window.monacoEditor.setValue('');
+        }
+        xmlInfoEl.textContent = '';
+        
+        // Clear localStorage for XML and help schema
+        localStorage.removeItem(STORAGE_KEYS.XML_CONTENT);
+        localStorage.removeItem(STORAGE_KEYS.XML_FILENAME);
+        localStorage.removeItem(STORAGE_KEYS.HELP_SCHEMA);
+        localStorage.removeItem(STORAGE_KEYS.HELP_SCHEMA_FILENAME);
+        localStorage.removeItem(STORAGE_KEYS.SELECTED_NODE_PATH);
+        localStorage.removeItem(STORAGE_KEYS.TREE_SEARCH_TEXT);
+        localStorage.removeItem(STORAGE_KEYS.TREE_SEARCH_SCOPE);
+        localStorage.removeItem(STORAGE_KEYS.TREE_SORT_STATE);
+        localStorage.removeItem(STORAGE_KEYS.TREE_EXPANDED);
+        localStorage.removeItem(STORAGE_KEYS.DETAIL_SEARCH_TEXT);
+        localStorage.removeItem(STORAGE_KEYS.DETAIL_SEARCH_SCOPE);
+        localStorage.removeItem(STORAGE_KEYS.DETAIL_SORT_STATE);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_VIEW);
+        
+        // Reset search and sort states
+        treeSearchText = '';
+        treeSearchInput.value = '';
+        treeSearchScope = 'both';
+        document.querySelector('input[name="tree-search-scope"][value="both"]').checked = true;
+        treeSortState = 'natural';
+        treeSortIcon.textContent = '↕';
+        treeExpanded = false;
+        treeToggleIcon.textContent = '⊞';
+        treeToggleText.textContent = t('expand');
+        
+        searchText = '';
+        searchInput.value = '';
+        searchScope = 'both';
+        document.querySelector('input[name="search-scope"][value="both"]').checked = true;
+        sortState = 'natural';
+        
+        // Switch to tree view
+        currentView = 'tree';
+        viewTabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.view === 'tree');
+        });
+        treeViewContainer.classList.add('active');
+        xmlViewContainer.classList.remove('active');
+        
+        // Clear Tauri file paths
+        if (isTauri) {
+            currentFilePath = null;
+            currentHelpFilePath = null;
+        }
+        
+        console.log('✅ Application reset completed');
+    }
+
+    // =============================================
+    // Environment Detection (must be before event listeners)
+    // =============================================
+    // Check if already initialized to avoid duplicate variable errors
+    if (typeof window._xmlNavigatorInitialized === 'undefined') {
+        window._xmlNavigatorInitialized = true;
+    } else {
+        console.warn('Script already initialized, skipping...');
+        // Early return if needed, but continue for now
+    }
+    
+    // Use var to avoid "duplicate variable that shadows global property" error
+    var isTauri = window.__TAURI__ !== undefined;
+    
+    // Tauri v2 API - use core.invoke for plugin commands
+    var tauriInvoke = null;
+    var currentFilePath = null;
+    var currentHelpFilePath = null;
+    
+    if (isTauri) {
+        console.log('🖥️ Running in Tauri v2 desktop environment');
+        console.log('Available __TAURI__ keys:', Object.keys(window.__TAURI__));
+        console.log('__TAURI__ object:', window.__TAURI__);
+        
+        // Tauri v2: Try multiple ways to get invoke
+        if (window.__TAURI__.core?.invoke) {
+            tauriInvoke = window.__TAURI__.core.invoke;
+            console.log('✅ Found invoke via core.invoke');
+        } else if (window.__TAURI__.invoke) {
+            tauriInvoke = window.__TAURI__.invoke;
+            console.log('✅ Found invoke via __TAURI__.invoke');
+        } else if (window.__TAURI__.dialog) {
+            // If dialog plugin is directly available (withGlobalTauri)
+            console.log('✅ Dialog plugin directly available');
+            // We'll use invoke wrapper but note that dialog might be available
+        }
+        
+        if (!tauriInvoke) {
+            console.error('❌ Tauri invoke not found!');
+            console.error('Available __TAURI__ keys:', Object.keys(window.__TAURI__));
+            console.error('__TAURI__ structure:', JSON.stringify(Object.keys(window.__TAURI__ || {})));
+        } else {
+            console.log('✅ tauriInvoke function ready');
+        }
+    } else {
+        console.log('🌐 Running in browser environment');
+    }
+    
+    // =============================================
+    // Tauri v2 Plugin Wrappers (using core.invoke)
+    // =============================================
+    
+    // Dialog plugin wrapper - open file dialog
+    async function tauriDialogOpen(options) {
+        // First try direct plugin access (if withGlobalTauri is enabled)
+        if (window.__TAURI__?.dialog?.open) {
+            console.log('Using direct dialog.open API');
+            try {
+                const result = await window.__TAURI__.dialog.open(options);
+                return result;
+            } catch (err) {
+                console.error('Direct dialog.open failed:', err);
+            }
+        }
+        
+        // Fallback to invoke
+        if (!tauriInvoke) {
+            console.error('tauriInvoke not available and dialog plugin not found');
+            return null;
+        }
+        try {
+            console.log('Calling dialog.open via invoke with options:', options);
+            // Tauri v2: invoke format is 'plugin:name|command' with direct options
+            const result = await tauriInvoke('plugin:dialog|open', options);
+            console.log('Dialog open result:', result);
+            return result;
+        } catch (err) {
+            console.error('Dialog open error:', err);
+            // Try alternative format
+            try {
+                console.log('Trying alternative format with wrapped options...');
+                const result = await tauriInvoke('plugin:dialog|open', { options });
+                return result;
+            } catch (err2) {
+                console.error('Alternative format also failed:', err2);
+                throw err;
+            }
+        }
+    }
+    
+    // Dialog plugin wrapper - show message
+    async function tauriDialogMessage(message, options = {}) {
+        if (!tauriInvoke) return;
+        try {
+            await tauriInvoke('plugin:dialog|message', { 
+                message, 
+                title: options.title || 'Message',
+                kind: options.kind || 'info'
+            });
+        } catch (err) {
+            console.error('Dialog message error:', err);
+            // Fallback to alert
+            alert(message);
+        }
+    }
+    
+    // FS plugin wrapper - read text file
+    async function tauriReadTextFile(path) {
+        // First try direct plugin access (if withGlobalTauri is enabled)
+        if (window.__TAURI__?.fs?.readTextFile) {
+            console.log('Using direct fs.readTextFile API');
+            try {
+                const content = await window.__TAURI__.fs.readTextFile(path);
+                return content;
+            } catch (err) {
+                console.error('Direct fs.readTextFile failed:', err);
+            }
+        }
+        
+        // Fallback to invoke
+        if (!tauriInvoke) {
+            console.error('tauriInvoke not available and fs plugin not found');
+            return null;
+        }
+        try {
+            console.log('Reading file via invoke:', path);
+            // Tauri v2: invoke format for fs plugin
+            const content = await tauriInvoke('plugin:fs|read_text_file', { 
+                path,
+                options: {}
+            });
+            console.log('File read successfully, length:', content?.length);
+            return content;
+        } catch (err) {
+            console.error('Read file error:', err);
+            throw err;
+        }
+    }
+    
+    // FS plugin wrapper - write text file
+    async function tauriWriteTextFile(path, contents) {
+        if (!tauriInvoke) return;
+        try {
+            await tauriInvoke('plugin:fs|write_text_file', { 
+                path,
+                contents,
+                options: {}
+            });
+        } catch (err) {
+            console.error('Write file error:', err);
+            throw err;
+        }
+    }
+    
+    // Dialog plugin wrapper - save file dialog
+    async function tauriDialogSave(options) {
+        if (!tauriInvoke) return null;
+        try {
+            const result = await tauriInvoke('plugin:dialog|save', { options });
+            return result;
+        } catch (err) {
+            console.error('Dialog save error:', err);
+            throw err;
+        }
+    }
+    
+    // Dialog plugin wrapper - ask confirmation
+    async function tauriDialogAsk(message, options = {}) {
+        if (!tauriInvoke) return false;
+        try {
+            const result = await tauriInvoke('plugin:dialog|ask', { 
+                message, 
+                title: options.title || 'Confirm',
+                kind: options.kind || 'info'
+            });
+            return result;
+        } catch (err) {
+            console.error('Dialog ask error:', err);
+            return false;
+        }
+    }
+
+    // =============================================
+    // Unified File Processing Functions
+    // =============================================
+    
+    // Process XML content (shared by browser and Tauri)
+    function processXmlContent(content, filename) {
+        const parser = new DOMParser();
+        const parsedDoc = parser.parseFromString(content, "text/xml");
+        
+        // Check for parser errors
+        const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
+                            parsedDoc.querySelector("parsererror");
+        if (parserError) {
+            const errorMsg = 'XML 解析错误: ' + parserError.textContent;
+            console.error("XML Parser Error:", parserError.textContent);
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        
+        // Check if we have a valid document element
+        if (!parsedDoc.documentElement || parsedDoc.documentElement.nodeName === "html") {
+            const errorMsg = "无效的 XML 文档结构";
+            console.error("Invalid XML document structure");
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        
+        // Store the parsed document and raw content
+        xmlDoc = parsedDoc;
+        xmlRawContent = content;
+        xmlFilename = filename;
+        
+        // Reset states for new file
+        currentNodePath = null;
+        currentNode = null;
+        xmlViewRendered = false;
+        
+        // Update UI
+        dropZoneText.textContent = filename;
+        
+        // Render tree
+        try {
+            renderTree(xmlDoc);
+        } catch (err) {
+            console.error("Error rendering tree:", err);
+            const errorMsg = "树渲染错误: " + err.message;
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        
+        // Reset detail view
+        try {
+            resetDetailView();
+        } catch (err) {
+            console.error("Error resetting detail view:", err);
+        }
+        
+        // If currently on XML view, render it
+        if (currentView === 'xml') {
+            renderXmlView();
+        }
+        
+        // Save state to localStorage
+        saveStateToStorage();
+        return true;
+    }
+    
+    // Process Help Schema content (shared by browser and Tauri)
+    function processHelpSchemaContent(content, filename) {
+        try {
+            const parsed = JSON.parse(content);
+            
+            // Validate basic structure
+            if (!parsed.definitions && !parsed.paths) {
+                const errorMsg = '帮助配置文件格式无效：缺少 definitions 或 paths';
+                if (isTauri && tauriInvoke) {
+                    tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+                } else {
+                    alert(errorMsg);
+                }
+                return false;
+            }
+            
+            // Process the schema (resolve $ref references)
+            helpSchema = processHelpSchema(parsed);
+            helpSchemaRaw = content;
+            helpSchemaFilename = filename;
+            
+            // Update UI
+            helpUploadBtn.classList.add('loaded');
+            helpStatusText.textContent = filename;
+            helpStatusText.title = filename;
+            
+            // Re-render tree and details to apply help
+            if (xmlDoc) {
+                renderTree(xmlDoc);
+                if (currentNode) {
+                    showNodeDetails(currentNode);
+                }
+            }
+            
+            // Save to localStorage
+            saveStateToStorage();
+            return true;
+            
+        } catch (err) {
+            console.error('Help schema parse error:', err);
+            const errorMsg = '帮助配置文件解析错误: ' + err.message;
+            if (isTauri && tauriInvoke) {
+                tauriDialogMessage(errorMsg, { title: 'Error', kind: 'error' });
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+    }
+
+    // =============================================
+    // Tauri File Operations
+    // =============================================
+    
+    // Open XML file using Tauri native dialog
+    async function tauriOpenXmlFile() {
+        if (!tauriInvoke) {
+            console.error('Tauri invoke not available');
+            return;
+        }
+        
+        try {
+            console.log('Opening XML file dialog...');
+            const filePath = await tauriDialogOpen({
+                multiple: false,
+                filters: [{
+                    name: 'XML Files',
+                    extensions: ['xml']
+                }]
+            });
+            
+            console.log('Selected file:', filePath);
+            
+            if (filePath) {
+                const content = await tauriReadTextFile(filePath);
+                currentFilePath = filePath;
+                
+                // Extract filename from path
+                const filename = filePath.split('/').pop().split('\\').pop();
+                
+                // Process the XML content
+                processXmlContent(content, filename);
+            }
+        } catch (err) {
+            console.error('Error opening file:', err);
+            await tauriDialogMessage('打开文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+        }
+    }
+    
+    // Open Help Schema file using Tauri native dialog
+    async function tauriOpenHelpFile() {
+        if (!tauriInvoke) {
+            console.error('Tauri invoke not available');
+            return;
+        }
+        
+        try {
+            console.log('Opening Help file dialog...');
+            const filePath = await tauriDialogOpen({
+                multiple: false,
+                filters: [{
+                    name: 'JSON Files',
+                    extensions: ['json']
+                }]
+            });
+            
+            console.log('Selected help file:', filePath);
+            
+            if (filePath) {
+                const content = await tauriReadTextFile(filePath);
+                currentHelpFilePath = filePath;
+                
+                // Extract filename from path
+                const filename = filePath.split('/').pop().split('\\').pop();
+                
+                // Process the help schema content
+                processHelpSchemaContent(content, filename);
+            }
+        } catch (err) {
+            console.error('Error opening help file:', err);
+            await tauriDialogMessage('打开帮助配置文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+        }
+    }
+    
+    // Expose Tauri functions globally for menu integration
+    if (isTauri) {
+        window.tauriOpenFile = tauriOpenXmlFile;
+        window.tauriOpenHelpFile = tauriOpenHelpFile;
+    }
+
+    // =============================================
+    // Event Listeners (Environment-aware)
+    // =============================================
+    
+    // --- XML Drop Zone Event Listeners ---
+    if (isTauri) {
+        // Tauri: Use native dialog on click
+        console.log('Setting up Tauri click handler for dropZone');
+        dropZone.addEventListener('click', (e) => {
+            console.log('DropZone clicked!', e);
+            e.preventDefault();
+            e.stopPropagation();
+            tauriOpenXmlFile().catch(err => {
+                console.error('Error in tauriOpenXmlFile:', err);
+            });
+        });
+        dropZone.style.cursor = 'pointer';
+        dropZoneText.textContent = 'CLICK TO OPEN XML FILE OR DRAG & DROP';
+        console.log('✅ Tauri click handler set up');
+        
+        // Use Tauri's event system for drag and drop (not HTML events)
+        if (window.__TAURI__?.event) {
+            console.log('Setting up Tauri drag-drop event listener');
+            let isOverDropZone = false;
+            
+            // Track mouse position to know if we're over the drop zone
+            dropZone.addEventListener('mouseenter', () => {
+                console.log('Mouse entered dropZone');
+                isOverDropZone = true;
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('mouseleave', () => {
+                console.log('Mouse left dropZone');
+                isOverDropZone = false;
+                dropZone.classList.remove('dragover');
+            });
+            
+            // Listen to Tauri's drag-drop event
+            window.__TAURI__.event.listen('tauri://drag-drop', async (event) => {
+                console.log('Tauri drag-drop event:', event);
+                console.log('isOverDropZone:', isOverDropZone);
+                console.log('Payload:', event.payload);
+                
+                if (isOverDropZone && event.payload && event.payload.paths && event.payload.paths.length > 0) {
+                    const filePath = event.payload.paths[0];
+                    console.log('Dropped file path:', filePath);
+                    
+                    if (filePath.toLowerCase().endsWith('.xml')) {
+                        try {
+                            const content = await tauriReadTextFile(filePath);
+                            currentFilePath = filePath;
+                            const filename = filePath.split('/').pop().split('\\').pop();
+                            processXmlContent(content, filename);
+                        } catch (err) {
+                            console.error('Error reading dropped XML file:', err);
+                            await tauriDialogMessage('读取拖放文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+                        }
+                    } else {
+                        console.warn('Invalid file type:', filePath);
+                        await tauriDialogMessage('请拖放 XML 格式的文件', { title: 'Warning', kind: 'warning' });
+                    }
+                }
+                
+                // Clean up visual feedback
+                isOverDropZone = false;
+                dropZone.classList.remove('dragover');
+            });
+            
+            console.log('✅ Tauri drag-drop event listener set up');
+        } else {
+            console.error('Tauri event API not available');
+        }
+    } else {
+        // Browser: Use file input
+        console.log('Setting up browser click handler for dropZone');
+        dropZone.addEventListener('click', () => {
+            console.log('DropZone clicked (browser mode)');
+            fileInput.click();
+        });
+        
+        // Browser: Use HTML5 drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Dragover event on dropZone');
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            console.log('Dragleave event on dropZone');
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+            
+            console.log('Drop event triggered', e);
+            console.log('dataTransfer.files:', e.dataTransfer.files);
+            
+            if (e.dataTransfer.files.length) {
+                console.log('Browser drop - handling file');
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+    }
 
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length) {
             handleFile(e.target.files[0]);
         }
     });
-
-    // --- Help Schema Upload Event Listeners ---
-    helpUploadBtn.addEventListener('click', () => helpFileInput.click());
     
     helpFileInput.addEventListener('change', (e) => {
         if (e.target.files.length) {
             handleHelpSchemaFile(e.target.files[0]);
         }
     });
-    
-    // Help schema drag and drop
-    helpDropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        helpDropZone.classList.add('dragover');
-    });
-    
-    helpDropZone.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        helpDropZone.classList.remove('dragover');
-    });
-    
-    helpDropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        helpDropZone.classList.remove('dragover');
+
+    // --- Help Schema Upload Event Listeners ---
+    if (isTauri) {
+        // Tauri: Use native dialog on click
+        console.log('Setting up Tauri click handler for helpUploadBtn');
+        helpUploadBtn.addEventListener('click', (e) => {
+            console.log('HelpUploadBtn clicked!', e);
+            e.preventDefault();
+            e.stopPropagation();
+            tauriOpenHelpFile().catch(err => {
+                console.error('Error in tauriOpenHelpFile:', err);
+            });
+        });
+        console.log('✅ Tauri help button handler set up');
         
-        if (e.dataTransfer.files.length) {
-            const file = e.dataTransfer.files[0];
-            if (file.name.endsWith('.json')) {
-                handleHelpSchemaFile(file);
-            } else {
-                alert('请上传 JSON 格式的帮助配置文件');
-            }
+        // Use Tauri's event system for drag and drop on help zone
+        if (window.__TAURI__?.event) {
+            console.log('Setting up Tauri drag-drop event listener for helpDropZone');
+            let isOverHelpDropZone = false;
+            
+            // Track mouse position to know if we're over the help drop zone
+            helpDropZone.addEventListener('mouseenter', () => {
+                console.log('Mouse entered helpDropZone');
+                isOverHelpDropZone = true;
+                helpDropZone.classList.add('dragover');
+            });
+            
+            helpDropZone.addEventListener('mouseleave', () => {
+                console.log('Mouse left helpDropZone');
+                isOverHelpDropZone = false;
+                helpDropZone.classList.remove('dragover');
+            });
+            
+            // Listen to Tauri's drag-drop event for help schema
+            window.__TAURI__.event.listen('tauri://drag-drop', async (event) => {
+                if (isOverHelpDropZone && event.payload && event.payload.paths && event.payload.paths.length > 0) {
+                    const filePath = event.payload.paths[0];
+                    console.log('Dropped help file path:', filePath);
+                    
+                    if (filePath.toLowerCase().endsWith('.json')) {
+                        try {
+                            const content = await tauriReadTextFile(filePath);
+                            currentHelpFilePath = filePath;
+                            const filename = filePath.split('/').pop().split('\\').pop();
+                            processHelpSchemaContent(content, filename);
+                        } catch (err) {
+                            console.error('Error reading dropped help file:', err);
+                            await tauriDialogMessage('读取帮助配置文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+                        }
+                    } else {
+                        console.warn('Invalid help file type:', filePath);
+                        await tauriDialogMessage('请上传 JSON 格式的帮助配置文件', { title: 'Warning', kind: 'warning' });
+                    }
+                }
+                
+                // Clean up visual feedback
+                isOverHelpDropZone = false;
+                helpDropZone.classList.remove('dragover');
+            });
+            
+            console.log('✅ Tauri drag-drop event listener for helpDropZone set up');
         }
-    });
+    } else {
+        // Browser: Use file input
+        console.log('Setting up browser click handler for helpUploadBtn');
+        helpUploadBtn.addEventListener('click', () => {
+            console.log('HelpUploadBtn clicked (browser mode)');
+            helpFileInput.click();
+        });
+        
+        // Browser: Use HTML5 drag and drop for help zone
+        helpDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Dragover event on helpDropZone');
+            helpDropZone.classList.add('dragover');
+        });
+        
+        helpDropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Dragleave event on helpDropZone');
+            helpDropZone.classList.remove('dragover');
+        });
+        
+        helpDropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            helpDropZone.classList.remove('dragover');
+            
+            console.log('Drop event on helpDropZone', e);
+            console.log('helpDropZone dataTransfer.files:', e.dataTransfer.files);
+            
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (file.name.endsWith('.json')) {
+                    handleHelpSchemaFile(file);
+                } else {
+                    alert('请上传 JSON 格式的帮助配置文件');
+                }
+            }
+        });
+    }
 
     // --- Search Event Listeners ---
     searchInput.addEventListener('input', (e) => {
@@ -1329,14 +2656,40 @@
     document.getElementById('xml-fold-all').addEventListener('click', foldAllXmlNodes);
     document.getElementById('xml-unfold-all').addEventListener('click', unfoldAllXmlNodes);
 
+    // --- New Button Event Listeners ---
+    // Reset button
+    resetBtn.addEventListener('click', resetApplication);
+    
+    // Help button
+    helpBtn.addEventListener('click', showHelpModal);
+    
+    // Theme toggle button
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    
+    // Language toggle button
+    langToggleBtn.addEventListener('click', toggleLanguage);
+    
+    // Help modal close button
+    helpModalClose.addEventListener('click', hideHelpModal);
+    
+    // Help modal overlay click
+    helpModal.querySelector('.modal-overlay').addEventListener('click', hideHelpModal);
+    
+    // ESC key to close help modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && helpModal.classList.contains('visible')) {
+            hideHelpModal();
+        }
+    });
+
     // --- File Handling ---
     function handleFile(file) {
         if (file.type !== "text/xml" && !file.name.endsWith(".xml")) {
-            alert("Please upload a valid XML file.");
+            alert("PLEASE UPLOAD A VALID XML FILE.");
             return;
         }
 
-        dropZone.textContent = `File: ${file.name}`;
+        dropZoneText.textContent = file.name;
         
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1400,7 +2753,7 @@
         
         reader.onerror = (err) => {
             console.error("FileReader error:", err);
-            alert("Error reading file.");
+            alert("ERROR READING FILE.");
         };
         
         reader.readAsText(file);
@@ -1579,7 +2932,7 @@
         
         if (isRequired && trimmedValue === '') {
             result.valid = false;
-            result.errors.push('此字段为必填项');
+            result.errors.push(t('requiredField'));
             return result; // No need to continue if empty and required
         }
         
@@ -1601,7 +2954,7 @@
                 const regex = new RegExp(helpContent.format);
                 if (!regex.test(trimmedValue)) {
                     result.valid = false;
-                    result.errors.push(`格式不匹配，期望格式: ${helpContent.format}`);
+                    result.errors.push(`${t('formatMismatch')}: ${helpContent.format}`);
                 }
             } catch (e) {
                 // Invalid regex in schema, skip validation
@@ -1621,13 +2974,13 @@
                 
             case 'integer':
                 if (!/^-?\d+$/.test(value)) {
-                    return `类型错误：期望整数，实际值 "${value}"`;
+                    return `${t('typeError')}：${t('expectInteger')} "${value}"`;
                 }
                 return null;
                 
             case 'number':
                 if (isNaN(parseFloat(value)) || !isFinite(value)) {
-                    return `类型错误：期望数字，实际值 "${value}"`;
+                    return `${t('typeError')}：${t('expectNumber')} "${value}"`;
                 }
                 return null;
                 
@@ -1636,7 +2989,7 @@
                 
             case 'boolean':
                 if (!['true', 'false', '1', '0', 'yes', 'no'].includes(value.toLowerCase())) {
-                    return `类型错误：期望布尔值，实际值 "${value}"`;
+                    return `${t('typeError')}：${t('expectBoolean')} "${value}"`;
                 }
                 return null;
                 
@@ -1657,7 +3010,7 @@
             ];
             
             if (!datePatterns.some(p => p.test(value))) {
-                return `日期格式错误：无法识别的日期格式 "${value}"`;
+                return `${t('dateFormatError')}：${t('unrecognizedDateFormat')} "${value}"`;
             }
             return null;
         }
@@ -1675,7 +3028,7 @@
         try {
             const regex = new RegExp('^' + pattern + '$');
             if (!regex.test(value)) {
-                return `日期格式错误：期望 ${format}，实际值 "${value}"`;
+                return `${t('dateFormatError')}：${t('expectFormat')} ${format}，${t('actualValue')} "${value}"`;
             }
         } catch (e) {
             // Invalid pattern, skip
@@ -1719,7 +3072,7 @@
         if (errors && errors.length > 0) {
             fullHtml += `
                 <div class="help-tooltip-error">
-                    <div class="help-tooltip-error-title">验证错误</div>
+                    <div class="help-tooltip-error-title">${t('validationErrors')}</div>
                     <ul class="help-tooltip-error-list">
                         ${errors.map(err => `<li>${escapeHtml(err)}</li>`).join('')}
                     </ul>
@@ -1739,7 +3092,7 @@
             if (helpContent.type) {
                 bodyHtml += `
                     <div class="help-tooltip-row">
-                        <span class="help-tooltip-label">类型</span>
+                        <span class="help-tooltip-label">${t('type')}</span>
                         <span class="help-tooltip-value">${escapeHtml(helpContent.type)}</span>
                     </div>`;
             }
@@ -1747,7 +3100,7 @@
             if (helpContent.format) {
                 bodyHtml += `
                     <div class="help-tooltip-row">
-                        <span class="help-tooltip-label">格式</span>
+                        <span class="help-tooltip-label">${t('format')}</span>
                         <span class="help-tooltip-value">${escapeHtml(helpContent.format)}</span>
                     </div>`;
             }
@@ -1755,7 +3108,7 @@
             if (helpContent.example !== undefined) {
                 bodyHtml += `
                     <div class="help-tooltip-row">
-                        <span class="help-tooltip-label">示例</span>
+                        <span class="help-tooltip-label">${t('example')}</span>
                         <span class="help-tooltip-value"><code class="help-tooltip-example">${escapeHtml(String(helpContent.example))}</code></span>
                     </div>`;
             }
@@ -1763,8 +3116,8 @@
             if (helpContent.required !== undefined) {
                 bodyHtml += `
                     <div class="help-tooltip-row">
-                        <span class="help-tooltip-label">必填</span>
-                        <span class="help-tooltip-value">${helpContent.required ? '是' : '否'}</span>
+                        <span class="help-tooltip-label">${t('required')}</span>
+                        <span class="help-tooltip-value">${helpContent.required ? t('yes') : t('no')}</span>
                     </div>`;
             }
             
@@ -1870,7 +3223,7 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <p>加载 XML 文件后在此查看原始内容</p>
+                    <p>${t('xmlEmptyState')}</p>
                 </div>`;
             return;
         }
@@ -1879,7 +3232,7 @@
         if (!window.monacoReady) {
             xmlContentEl.innerHTML = `
                 <div class="xml-empty-state">
-                    <p>正在加载代码编辑器...</p>
+                    <p>${t('loadingEditor')}</p>
                 </div>`;
             setTimeout(() => renderXmlView(), 200);
             return;
@@ -1895,11 +3248,12 @@
                 window.monacoEditor = null;
             }
             
-            // Create Monaco editor
+            // Create Monaco editor with theme based on current theme
+            const monacoTheme = currentTheme === 'dark' ? 'vs-dark' : 'vs';
             window.monacoEditor = monaco.editor.create(xmlContentEl, {
                 value: xmlRawContent,
                 language: 'xml',
-                theme: 'vs-dark',
+                theme: monacoTheme,
                 readOnly: true,
                 automaticLayout: true,
                 minimap: { enabled: true },
@@ -1920,8 +3274,8 @@
             console.error('Monaco initialization error:', err);
             xmlContentEl.innerHTML = `
                 <div class="xml-empty-state">
-                    <p style="color: #dc2626;">初始化编辑器失败: ${err.message}</p>
-                    <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">请检查浏览器控制台了解详情</p>
+                    <p style="color: #dc2626;">${t('editorInitFailed')}: ${err.message}</p>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">${t('checkConsole')}</p>
                 </div>`;
         }
     }
@@ -1950,7 +3304,7 @@
         
         const lines = xmlRawContent.split('\n').length;
         const size = (xmlRawContent.length / 1024).toFixed(2);
-        xmlInfoEl.textContent = `${lines} 行 | ${size} KB`;
+        xmlInfoEl.textContent = `${lines} ${t('lines')} | ${size} KB`;
     }
 
     // --- Tree Rendering ---
@@ -1970,7 +3324,7 @@
                     setTimeout(() => restoreNodeSelection(currentNodePath), 0);
                 }
             } else {
-                treeContainer.innerHTML = '<div class="empty-state" style="height: auto; padding-top: 2rem;">No matching nodes found.</div>';
+                treeContainer.innerHTML = `<div class="empty-state" style="height: auto; padding-top: 2rem;">${t('noMatchingNodes')}</div>`;
             }
         } catch (err) {
             console.error("Error rendering tree:", err);
@@ -2325,7 +3679,7 @@
         if (allData.length === 0) {
             detailContent.innerHTML = `
                 <div class="empty-state">
-                    <p>NO DIRECT ATTRIBUTES OR LEAF CHILDREN VALUES.</p>
+                    <p>${t('noAttributesOrChildren')}</p>
                 </div>`;
             updateSearchInfo(0, 0);
             return;
@@ -2351,8 +3705,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="sortable" id="sort-header">PROPERTY / TAG${getSortIndicator()}</th>
-                            <th>VALUE</th>
+                            <th class="sortable" id="sort-header">${t('propertyTagHeader')}${getSortIndicator()}</th>
+                            <th>${t('valueHeader')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2362,7 +3716,7 @@
             html += `
                 <tr>
                     <td colspan="2" style="text-align: center; color: #9ca3af; padding: 2rem;">
-                        没有匹配的结果
+                        ${t('noMatchingResults')}
                     </td>
                 </tr>
             `;
@@ -2435,7 +3789,7 @@
         if (!searchText || searchText.trim() === '') {
             searchInfo.textContent = '';
         } else {
-            searchInfo.textContent = `显示 ${filtered} / ${total} 项`;
+            searchInfo.textContent = `${t('showingResults')} ${filtered} ${t('of')} ${total} ${t('items')}`;
         }
     }
 
@@ -2451,7 +3805,7 @@
                 <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                <p>SELECT A NODE FROM THE TREE TO VIEW DETAILS</p>
+                <p>${t('selectNode')}</p>
             </div>`;
     }
 
@@ -2533,6 +3887,10 @@
             
             // Save current view state
             localStorage.setItem(STORAGE_KEYS.CURRENT_VIEW, currentView);
+            
+            // Save theme and language
+            localStorage.setItem(STORAGE_KEYS.CURRENT_THEME, currentTheme);
+            localStorage.setItem(STORAGE_KEYS.CURRENT_LANG, currentLang);
         } catch (e) {
             console.warn('Failed to save state to localStorage:', e);
             // localStorage might be full or disabled
@@ -2541,6 +3899,36 @@
 
     function restoreStateFromStorage() {
         try {
+            // Restore theme and language first
+            const savedTheme = localStorage.getItem(STORAGE_KEYS.CURRENT_THEME);
+            const savedLang = localStorage.getItem(STORAGE_KEYS.CURRENT_LANG);
+            
+            if (savedTheme) {
+                currentTheme = savedTheme;
+                document.documentElement.setAttribute('data-theme', currentTheme);
+            } else {
+                // Default to light theme
+                currentTheme = 'light';
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+            
+            // Update theme toggle icon
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                themeIcon.textContent = currentTheme === 'dark' ? 'light_mode' : 'dark_mode';
+            }
+            
+            if (savedLang) {
+                currentLang = savedLang;
+            } else {
+                // Detect browser language or default to Chinese
+                const browserLang = navigator.language || navigator.userLanguage;
+                currentLang = browserLang.startsWith('zh') ? 'zh' : 'zh'; // Default to zh as specified
+            }
+            
+            // Apply translations
+            applyTranslations();
+            
             // Restore help schema first (before rendering)
             const savedHelpSchema = localStorage.getItem(STORAGE_KEYS.HELP_SCHEMA);
             const savedHelpSchemaFilename = localStorage.getItem(STORAGE_KEYS.HELP_SCHEMA_FILENAME);
@@ -2639,7 +4027,7 @@
                 xmlFilename = savedFilename || 'Restored file';
                 
                 // Update drop zone text
-                dropZone.textContent = `File: ${xmlFilename}`;
+                dropZoneText.textContent = xmlFilename;
                 
                 // Parse the XML
                 const parser = new DOMParser();
@@ -2774,6 +4162,137 @@
 
     // --- Initialize: Restore state on page load ---
     restoreStateFromStorage();
+
+    // =============================================
+    // Additional Tauri Functions (Save, Menu Integration)
+    // =============================================
+    
+    if (isTauri && tauriInvoke) {
+        // Save XML file
+        window.tauriSaveFile = async function() {
+            if (!xmlRawContent) {
+                await tauriDialogMessage('没有可保存的内容', { title: 'Warning', kind: 'warning' });
+                return;
+            }
+            
+            try {
+                if (currentFilePath) {
+                    // Save to existing path
+                    await tauriWriteTextFile(currentFilePath, xmlRawContent);
+                    await tauriDialogMessage('文件已保存', { title: 'Success', kind: 'info' });
+                } else {
+                    // No path, use Save As
+                    await window.tauriSaveFileAs();
+                }
+            } catch (err) {
+                console.error('Error saving file:', err);
+                await tauriDialogMessage('保存文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+            }
+        };
+        
+        // Save As
+        window.tauriSaveFileAs = async function() {
+            if (!xmlRawContent) {
+                await tauriDialogMessage('没有可保存的内容', { title: 'Warning', kind: 'warning' });
+                return;
+            }
+            
+            try {
+                const filePath = await tauriDialogSave({
+                    filters: [{
+                        name: 'XML Files',
+                        extensions: ['xml']
+                    }],
+                    defaultPath: xmlFilename || 'document.xml'
+                });
+                
+                if (filePath) {
+                    await tauriWriteTextFile(filePath, xmlRawContent);
+                    currentFilePath = filePath;
+                    
+                    // Update filename
+                    const filename = filePath.split('/').pop().split('\\').pop();
+                    xmlFilename = filename;
+                    dropZoneText.textContent = filename;
+                    
+                    await tauriDialogMessage('文件已保存', { title: 'Success', kind: 'info' });
+                }
+            } catch (err) {
+                console.error('Error saving file:', err);
+                await tauriDialogMessage('保存文件失败: ' + err.message, { title: 'Error', kind: 'error' });
+            }
+        };
+        
+        // --- Tree View Controls (for menu integration) ---
+        
+        window.expandAllNodes = function() {
+            treeExpanded = true;
+            treeToggleIcon.textContent = '⊟';
+            treeToggleText.textContent = '折叠';
+            
+            const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+            treeNodes.forEach(node => node.classList.add('expanded'));
+            saveStateToStorage();
+        };
+        
+        window.collapseAllNodes = function() {
+            treeExpanded = false;
+            treeToggleIcon.textContent = '⊞';
+            treeToggleText.textContent = '展开';
+            
+            const treeNodes = treeContainer.querySelectorAll('.tree-node:not(.leaf-node)');
+            treeNodes.forEach(node => node.classList.remove('expanded'));
+            saveStateToStorage();
+        };
+        
+        window.toggleTreePanel = function() {
+            const treePanel = document.getElementById('tree-panel');
+            if (treePanel) {
+                treePanel.style.display = treePanel.style.display === 'none' ? 'flex' : 'none';
+            }
+        };
+        
+        // --- About Dialog ---
+        
+        window.showAboutDialog = async function() {
+            await tauriDialogMessage(
+                'XML Navigator v1.0.0\n\n' +
+                '一个现代化的 XML 文件浏览器和编辑器\n' +
+                '支持树形视图、语法高亮和帮助配置验证\n\n' +
+                'Built with Tauri + Monaco Editor',
+                { title: 'About XML Navigator', kind: 'info' }
+            );
+        };
+        
+        // --- Auto Update ---
+        
+        window.checkForUpdates = async function() {
+            try {
+                // Tauri v2 updater API
+                const tauriUpdater = window.__TAURI__.updater;
+                if (tauriUpdater && tauriUpdater.check) {
+                    const update = await tauriUpdater.check();
+                    if (update && update.available) {
+                        const shouldUpdate = await tauriDialogAsk(
+                            `发现新版本 ${update.version}，是否现在更新？`,
+                            { title: 'Update Available', kind: 'info' }
+                        );
+                    
+                        if (shouldUpdate) {
+                            await update.downloadAndInstall();
+                        }
+                    } else {
+                        await tauriDialogMessage('当前已是最新版本', { title: 'Check for Updates', kind: 'info' });
+                    }
+                } else {
+                    await tauriDialogMessage('更新功能未配置', { title: 'Info', kind: 'info' });
+                }
+            } catch (err) {
+                console.error('Update check failed:', err);
+                await tauriDialogMessage('检查更新失败: ' + err.message, { title: 'Error', kind: 'error' });
+            }
+        };
+    }
 </script>
 
 </body>
