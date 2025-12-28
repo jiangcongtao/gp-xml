@@ -798,28 +798,526 @@
             border-left: 3px solid var(--error-border);
         }
 
+        /* ==================== */
+        /* Mobile-only Elements (Hidden on Desktop by default) */
+        /* ==================== */
+        .mobile-hamburger,
+        .mobile-menu,
+        .mobile-detail-overlay,
+        .mobile-detail-handle,
+        .mobile-detail-close,
+        .mobile-chips {
+            display: none;
+        }
+        
+        /* Desktop: Show radio buttons */
+        .tree-scope-group:not(.mobile-chips),
+        .search-scope:not(.mobile-chips) {
+            display: flex;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
+            body {
+                font-size: 15px;
+            }
+            
             main {
                 flex-direction: column;
             }
+            
+            /* ==================== */
+            /* Header Optimizations */
+            /* ==================== */
+            header {
+                padding: 0.5rem 0.75rem;
+                flex-wrap: nowrap;
+                height: auto;
+                min-height: 56px;
+                gap: 0.5rem;
+            }
+            
+            h1 {
+                font-size: 1rem;
+                white-space: nowrap;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+            }
+            
+            /* Hide title text on mobile, show only icon */
+            h1 .app-title {
+                display: none;
+            }
+            
+            h1 .material-symbols-outlined {
+                margin-right: 0;
+                font-size: 1.4rem;
+            }
+            
+            #drop-zone {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.6rem;
+                min-width: 80px;
+                flex: 1;
+                max-width: none;
+            }
+            
+            #drop-zone .material-symbols-outlined {
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+            
+            #drop-zone-text {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                min-width: 0;
+            }
+            
+            .help-upload-wrapper {
+                display: none;
+            }
+            
+            .header-controls {
+                display: none;
+            }
+            
+            .mobile-hamburger {
+                display: flex !important;
+                width: 44px;
+                height: 44px;
+                min-width: 44px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border-color);
+                border-radius: 0.5rem;
+                background: var(--panel-bg);
+                cursor: pointer;
+                color: var(--text-color);
+                transition: all 0.2s ease;
+            }
+            
+            .mobile-hamburger:hover {
+                border-color: var(--primary-color);
+                color: var(--primary-color);
+                background-color: var(--hover-color);
+            }
+            
+            /* ==================== */
+            /* Mobile Side Menu */
+            /* ==================== */
+            .mobile-menu {
+                display: none;
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10001;
+            }
+            
+            .mobile-menu.visible {
+                display: block;
+            }
+            
+            .mobile-menu-overlay {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(2px);
+            }
+            
+            .mobile-menu-content {
+                position: absolute;
+                right: 0;
+                top: 0;
+                width: 280px;
+                max-width: 80vw;
+                height: 100%;
+                background: var(--panel-bg);
+                box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                overflow-y: auto;
+            }
+            
+            .mobile-menu.visible .mobile-menu-content {
+                transform: translateX(0);
+            }
+            
+            .mobile-menu-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1rem;
+                border-bottom: 1px solid var(--border-color);
+                position: sticky;
+                top: 0;
+                background: var(--panel-bg);
+                z-index: 1;
+            }
+            
+            .mobile-menu-header h3 {
+                margin: 0;
+                font-size: 1.2rem;
+                color: var(--primary-color);
+            }
+            
+            .mobile-menu-close {
+                width: 40px;
+                height: 40px;
+                border: none;
+                background: var(--hover-color);
+                border-radius: 50%;
+                font-size: 1.5rem;
+                color: var(--text-color);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            
+            .mobile-menu-close:hover {
+                background: var(--primary-color);
+                color: white;
+            }
+            
+            .mobile-menu-body {
+                padding: 0.5rem 0;
+            }
+            
+            .mobile-menu-item-wrapper {
+                padding: 0.5rem 1rem;
+            }
+            
+            .mobile-menu-item {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem;
+                border: none;
+                background: transparent;
+                color: var(--text-color);
+                font-size: 1rem;
+                text-align: left;
+                cursor: pointer;
+                transition: background 0.2s;
+                min-height: 56px;
+            }
+            
+            .mobile-menu-item:hover {
+                background: var(--hover-color);
+            }
+            
+            .mobile-menu-item .material-symbols-outlined {
+                font-size: 1.5rem;
+                color: var(--primary-color);
+            }
+            
+            .mobile-help-upload .help-upload-btn {
+                width: 100%;
+                max-width: none;
+                justify-content: flex-start;
+                min-height: 56px;
+            }
+            
+            /* ==================== */
+            /* Tree & Detail Layout */
+            /* ==================== */
             #tree-panel {
                 width: 100%;
-                height: 40%;
+                height: 100%;
                 border-right: none;
-                border-bottom: 1px solid var(--border-color);
             }
-            .help-upload-btn span:not(.material-symbols-outlined) {
+            
+            #detail-panel {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 70vh;
+                max-height: 70vh;
+                background: var(--panel-bg);
+                border-radius: 16px 16px 0 0;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+            }
+            
+            #detail-panel.visible {
+                transform: translateY(0);
+            }
+            
+            #detail-panel .search-filter-bar {
+                flex-shrink: 0;
+            }
+            
+            #detail-panel .detail-content {
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .mobile-detail-overlay {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.3);
+                z-index: 999;
+                opacity: 0;
+                pointer-events: none;
+            }
+            
+            .mobile-detail-overlay.visible {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            
+            .mobile-detail-handle {
+                display: block;
+                width: 40px;
+                height: 4px;
+                background: var(--border-color);
+                border-radius: 2px;
+                margin: 8px auto;
+                flex-shrink: 0;
+            }
+            
+            .mobile-detail-close {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                width: 40px;
+                height: 40px;
+                border: none;
+                background: var(--hover-color);
+                border-radius: 50%;
+                cursor: pointer;
+                z-index: 10;
+                transition: all 0.2s;
+            }
+            
+            .mobile-detail-close .material-symbols-outlined {
+                font-size: 1.5rem;
+                color: var(--text-color);
+            }
+            
+            .mobile-detail-close:hover {
+                background: var(--primary-color);
+            }
+            
+            .mobile-detail-close:hover .material-symbols-outlined {
+                color: white;
+            }
+            
+            /* ==================== */
+            /* Chip Buttons */
+            /* ==================== */
+            .tree-scope-group:not(.mobile-chips),
+            .search-scope:not(.mobile-chips) {
+                display: none !important;
+            }
+            
+            .mobile-chips {
+                display: flex !important;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            
+            .chip-btn {
+                padding: 0.5rem 1rem;
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                background: var(--panel-bg);
+                color: var(--text-color);
+                font-size: 0.8rem;
+                white-space: nowrap;
+                cursor: pointer;
+                transition: all 0.2s;
+                min-height: 36px;
+            }
+            
+            .chip-btn.active {
+                background: var(--primary-color);
+                color: white;
+                border-color: var(--primary-color);
+            }
+            
+            .chip-btn:hover:not(.active) {
+                border-color: var(--primary-color);
+                background: var(--hover-color);
+            }
+            
+            /* ==================== */
+            /* Touch Target Optimization */
+            /* ==================== */
+            .tree-content {
+                padding: 12px 8px;
+                min-height: 44px;
+            }
+            
+            .header-btn,
+            .tree-sort-btn,
+            .xml-toolbar-btn {
+                min-width: 44px;
+                min-height: 44px;
+                padding: 0.6rem;
+            }
+            
+            td, th {
+                padding: 1.2rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            input[type="text"] {
+                height: 44px;
+                font-size: 16px; /* Prevent iOS zoom */
+                padding: 0.6rem 1rem;
+            }
+            
+            .tree-search-wrapper input {
+                height: 44px;
+                font-size: 16px;
+            }
+            
+            .view-tab {
+                flex: 1;
+                justify-content: center;
+                padding: 1rem 0.5rem;
+                min-height: 50px;
+            }
+            
+            /* ==================== */
+            /* View Tabs */
+            /* ==================== */
+            .view-tabs {
+                padding: 0;
+                justify-content: space-around;
+            }
+            
+            .view-tab span:not(.material-symbols-outlined) {
                 display: none;
             }
-            header {
-                padding: 0.75rem 1rem;
+            
+            /* ==================== */
+            /* Search Controls */
+            /* ==================== */
+            .search-controls {
+                flex-direction: column;
+                gap: 0.75rem;
             }
-            .header-btn span:not(.material-symbols-outlined) {
-                display: none;
+            
+            .search-input-wrapper {
+                width: 100%;
+                min-width: auto;
             }
-            .header-controls {
-                gap: 0.25rem;
+            
+            .search-scope {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            
+            /* ==================== */
+            /* Tree Controls */
+            /* ==================== */
+            .tree-options {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: stretch;
+            }
+            
+            .tree-scope-group {
+                flex-wrap: wrap;
+            }
+            
+            .tree-sort-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* ==================== */
+            /* Modal */
+            /* ==================== */
+            .modal-content {
+                width: 95%;
+                max-width: 95vw;
+                max-height: 90vh;
+            }
+            
+            .modal-body {
+                padding: 1rem;
+            }
+            
+            /* ==================== */
+            /* XML View */
+            /* ==================== */
+            .xml-toolbar {
+                padding: 0.5rem 0.75rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .xml-toolbar-btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+                min-width: auto;
+                min-height: 36px;
+            }
+            
+            .xml-info {
+                font-size: 0.7rem;
+            }
+            
+            .xml-content {
+                margin: 0 0.25rem;
+                padding: 0;
+            }
+            
+            .xml-content pre {
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            /* Monaco Editor mobile optimization */
+            .cm-editor {
+                font-size: 0.75rem;
+            }
+            
+            .cm-content {
+                padding: 0.5rem 0;
+            }
+            
+            .cm-line {
+                padding: 0 0.25rem;
+            }
+            
+            /* ==================== */
+            /* Detail Content Scrolling */
+            /* ==================== */
+            .detail-content {
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            #tree-view-container {
+                flex-direction: column;
             }
         }
 
@@ -1213,7 +1711,7 @@
 <body>
 
 <header>
-    <h1><span class="material-symbols-outlined">code</span>XML Navigator</h1>
+    <h1><span class="material-symbols-outlined">code</span><span class="app-title">XML Navigator</span></h1>
     <div id="drop-zone">
         <span class="material-symbols-outlined">upload_file</span>
         <span id="drop-zone-text">DRAG & DROP XML FILE HERE OR CLICK TO UPLOAD</span>
@@ -1244,7 +1742,55 @@
             <span data-i18n="language">语言</span>
         </button>
     </div>
+    <!-- Mobile Hamburger Menu Button -->
+    <button id="mobile-hamburger-btn" class="mobile-hamburger" style="display: none;">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
 </header>
+
+<!-- Mobile Side Menu -->
+<div id="mobile-menu" class="mobile-menu">
+    <div class="mobile-menu-overlay"></div>
+    <div class="mobile-menu-content">
+        <div class="mobile-menu-header">
+            <h3 data-i18n="menu">菜单</h3>
+            <button class="mobile-menu-close">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="mobile-menu-body">
+            <!-- Help Schema Upload -->
+            <div class="mobile-menu-item-wrapper">
+                <div class="help-upload-wrapper mobile-help-upload" id="mobile-help-drop-zone">
+                    <button id="mobile-help-upload-btn" class="help-upload-btn">
+                        <span class="material-symbols-outlined">schema</span>
+                        <span id="mobile-help-status-text">加载帮助配置</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Theme Toggle -->
+            <button id="mobile-theme-toggle-btn" class="mobile-menu-item">
+                <span class="material-symbols-outlined" id="mobile-theme-icon">dark_mode</span>
+                <span data-i18n="theme">主题</span>
+            </button>
+            <!-- Language Toggle -->
+            <button id="mobile-lang-toggle-btn" class="mobile-menu-item">
+                <span class="material-symbols-outlined">language</span>
+                <span data-i18n="language">语言</span>
+            </button>
+            <!-- Help -->
+            <button id="mobile-help-btn" class="mobile-menu-item">
+                <span class="material-symbols-outlined">help</span>
+                <span data-i18n="help">帮助</span>
+            </button>
+            <!-- Reset -->
+            <button id="mobile-reset-btn" class="mobile-menu-item">
+                <span class="material-symbols-outlined">refresh</span>
+                <span data-i18n="reset">重置</span>
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- View Tabs -->
 <div class="view-tabs">
@@ -1337,6 +1883,9 @@
 </div>
 
 <main>
+    <!-- Mobile Detail Overlay -->
+    <div id="mobile-detail-overlay" class="mobile-detail-overlay"></div>
+    
     <!-- Tree View Container -->
     <div id="tree-view-container" class="view-container active">
     <div id="tree-panel">
@@ -1365,6 +1914,18 @@
                         <span data-i18n="searchBoth">全部</span>
                     </label>
                 </div>
+                <!-- Mobile Chip Buttons for Tree Search Scope -->
+                <div class="tree-scope-group mobile-chips" style="display: none;">
+                    <button class="chip-btn" data-scope="name">
+                        <span data-i18n="searchName">名称</span>
+                    </button>
+                    <button class="chip-btn" data-scope="value">
+                        <span data-i18n="searchValue">值</span>
+                    </button>
+                    <button class="chip-btn active" data-scope="both">
+                        <span data-i18n="searchBoth">全部</span>
+                    </button>
+                </div>
                 <button class="tree-sort-btn" id="tree-sort-btn">
                     <span class="tree-sort-icon" id="tree-sort-icon">↕</span>
                     <span data-i18n="sort">排序</span>
@@ -1385,6 +1946,12 @@
     </div>
     
     <div id="detail-panel">
+        <!-- Mobile Detail Controls -->
+        <div class="mobile-detail-handle"></div>
+        <button class="mobile-detail-close">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        
         <!-- Search Filter Bar (hidden by default) -->
         <div class="search-filter-bar" id="search-bar">
             <div class="search-controls">
@@ -1409,6 +1976,18 @@
                         <input type="radio" name="search-scope" value="both" checked />
                         <span data-i18n="propertyOrValue">PROPERTY/TAG 或 VALUE</span>
                     </label>
+                </div>
+                <!-- Mobile Chip Buttons for Detail Search Scope -->
+                <div class="search-scope mobile-chips" style="display: none;">
+                    <button class="chip-btn" data-scope="property">
+                        <span data-i18n="propertyTag">属性</span>
+                    </button>
+                    <button class="chip-btn" data-scope="value">
+                        <span data-i18n="valueOnly">值</span>
+                    </button>
+                    <button class="chip-btn active" data-scope="both">
+                        <span data-i18n="searchBoth">全部</span>
+                    </button>
                 </div>
             </div>
             <div class="search-info" id="search-info"></div>
@@ -2851,7 +3430,225 @@
         if (e.key === 'Escape' && helpModal.classList.contains('visible')) {
             hideHelpModal();
         }
+        // ESC key to close mobile detail panel
+        if (e.key === 'Escape' && window.innerWidth <= 768) {
+            const detailPanel = document.getElementById('detail-panel');
+            if (detailPanel && detailPanel.classList.contains('visible')) {
+                closeDetailMobile();
+            }
+        }
+        // ESC key to close mobile menu
+        if (e.key === 'Escape') {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu && mobileMenu.classList.contains('visible')) {
+                closeMobileMenu();
+            }
+        }
     });
+
+    // =============================================
+    // Mobile Menu Functions
+    // =============================================
+    
+    // Mobile hamburger menu button
+    const mobileHamburgerBtn = document.getElementById('mobile-hamburger-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuClose = document.querySelector('.mobile-menu-close');
+    const mobileMenuOverlay = document.querySelector('.mobile-menu-overlay');
+    
+    // Mobile menu item buttons
+    const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle-btn');
+    const mobileLangToggleBtn = document.getElementById('mobile-lang-toggle-btn');
+    const mobileHelpBtn = document.getElementById('mobile-help-btn');
+    const mobileResetBtn = document.getElementById('mobile-reset-btn');
+    const mobileHelpUploadBtn = document.getElementById('mobile-help-upload-btn');
+    
+    function openMobileMenu() {
+        mobileMenu.classList.add('visible');
+        document.body.style.overflow = 'hidden'; // Prevent body scroll
+    }
+    
+    function closeMobileMenu() {
+        mobileMenu.classList.remove('visible');
+        document.body.style.overflow = ''; // Restore body scroll
+    }
+    
+    // Event listeners for mobile menu
+    if (mobileHamburgerBtn) {
+        mobileHamburgerBtn.addEventListener('click', openMobileMenu);
+    }
+    
+    if (mobileMenuClose) {
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+    
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+    
+    // Mobile menu item actions
+    if (mobileThemeToggleBtn) {
+        mobileThemeToggleBtn.addEventListener('click', () => {
+            toggleTheme();
+            // Update mobile menu icon
+            const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+            if (mobileThemeIcon) {
+                mobileThemeIcon.textContent = currentTheme === 'dark' ? 'light_mode' : 'dark_mode';
+            }
+        });
+    }
+    
+    if (mobileLangToggleBtn) {
+        mobileLangToggleBtn.addEventListener('click', () => {
+            toggleLanguage();
+            closeMobileMenu();
+        });
+    }
+    
+    if (mobileHelpBtn) {
+        mobileHelpBtn.addEventListener('click', () => {
+            showHelpModal();
+            closeMobileMenu();
+        });
+    }
+    
+    if (mobileResetBtn) {
+        mobileResetBtn.addEventListener('click', () => {
+            closeMobileMenu();
+            setTimeout(() => resetApplication(), 100);
+        });
+    }
+    
+    // Mobile help schema upload
+    if (mobileHelpUploadBtn) {
+        if (isTauri) {
+            mobileHelpUploadBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                tauriOpenHelpFile().catch(err => {
+                    console.error('Error in tauriOpenHelpFile:', err);
+                });
+            });
+        } else {
+            mobileHelpUploadBtn.addEventListener('click', () => {
+                helpFileInput.click();
+            });
+        }
+    }
+    
+    // =============================================
+    // Mobile Detail Panel Functions
+    // =============================================
+    
+    const mobileDetailOverlay = document.getElementById('mobile-detail-overlay');
+    const mobileDetailClose = document.querySelector('.mobile-detail-close');
+    
+    function showDetailMobile() {
+        if (window.innerWidth <= 768) {
+            const detailPanel = document.getElementById('detail-panel');
+            detailPanel.classList.add('visible');
+            mobileDetailOverlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeDetailMobile() {
+        const detailPanel = document.getElementById('detail-panel');
+        detailPanel.classList.remove('visible');
+        mobileDetailOverlay.classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+    
+    // Event listeners for mobile detail panel
+    if (mobileDetailClose) {
+        mobileDetailClose.addEventListener('click', closeDetailMobile);
+    }
+    
+    if (mobileDetailOverlay) {
+        mobileDetailOverlay.addEventListener('click', closeDetailMobile);
+    }
+    
+    // =============================================
+    // Mobile Chip Buttons
+    // =============================================
+    
+    // Tree search scope chips
+    const treeChips = document.querySelectorAll('.tree-controls .mobile-chips .chip-btn');
+    treeChips.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Use closest() to get the actual button, not the inner span
+            const chipBtn = e.target.closest('.chip-btn');
+            if (!chipBtn) return;
+            
+            const parent = chipBtn.closest('.mobile-chips');
+            parent.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+            chipBtn.classList.add('active');
+            
+            const scope = chipBtn.dataset.scope;
+            treeSearchScope = scope;
+            
+            // Update radio button for consistency
+            const radio = document.querySelector(`input[name="tree-search-scope"][value="${scope}"]`);
+            if (radio) radio.checked = true;
+            
+            // Re-render tree
+            if (xmlDoc) {
+                renderTree(xmlDoc);
+            }
+            saveStateToStorage();
+        });
+    });
+    
+    // Detail search scope chips
+    const detailChips = document.querySelectorAll('.search-filter-bar .mobile-chips .chip-btn');
+    detailChips.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Use closest() to get the actual button, not the inner span
+            const chipBtn = e.target.closest('.chip-btn');
+            if (!chipBtn) return;
+            
+            const parent = chipBtn.closest('.mobile-chips');
+            parent.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+            chipBtn.classList.add('active');
+            
+            const scope = chipBtn.dataset.scope;
+            searchScope = scope;
+            
+            // Update radio button for consistency
+            const radio = document.querySelector(`input[name="search-scope"][value="${scope}"]`);
+            if (radio) radio.checked = true;
+            
+            // Re-render details
+            if (currentNode) {
+                showNodeDetails(currentNode);
+            }
+            saveStateToStorage();
+        });
+    });
+    
+    // Update radio button listeners to sync with chips
+    document.querySelectorAll('input[name="tree-search-scope"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            // Sync chip button
+            const chip = document.querySelector(`.tree-controls .mobile-chips .chip-btn[data-scope="${e.target.value}"]`);
+            if (chip) {
+                document.querySelectorAll('.tree-controls .mobile-chips .chip-btn').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            }
+        });
+    });
+    
+    document.querySelectorAll('input[name="search-scope"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            // Sync chip button
+            const chip = document.querySelector(`.search-filter-bar .mobile-chips .chip-btn[data-scope="${e.target.value}"]`);
+            if (chip) {
+                document.querySelectorAll('.search-filter-bar .mobile-chips .chip-btn').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            }
+        });
+    });
+
 
     // --- File Handling ---
     function handleFile(file) {
@@ -3812,6 +4609,11 @@
     function showNodeDetails(node) {
         // Save current node for re-rendering on sort
         currentNode = node;
+        
+        // Show mobile detail panel if on mobile
+        if (window.innerWidth <= 768) {
+            showDetailMobile();
+        }
         
         // Show search bar when details are displayed
         searchBar.classList.add('visible');
