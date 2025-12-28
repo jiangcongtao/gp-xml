@@ -6,8 +6,7 @@
     <title>XML Navigator</title>
     <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <!-- Monaco Editor (VS Code 的编辑器) - 本地资源 -->
-    <script src="monaco/vs/loader.js"></script>
+    <!-- Monaco Editor will be loaded dynamically based on environment -->
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -1453,21 +1452,53 @@
     <!-- End XML View Container -->
 </main>
 <script>
+    // =============================================
+    // Dynamic Monaco Loader - CDN fallback for browser, local for Tauri
+    // =============================================
+    function loadMonaco() {
+        return new Promise((resolve, reject) => {
+            // For Tauri, use local Monaco
+            if (window.__TAURI__ !== undefined) {
+                const script = document.createElement('script');
+                script.src = 'monaco/vs/loader.js';
+                script.onload = () => {
+                    require.config({ paths: { 'vs': 'monaco/vs' }});
+                    require(['vs/editor/editor.main'], function() {
+                        window.monacoReady = true;
+                        console.log('✅ Monaco Editor loaded (local)');
+                        resolve();
+                    });
+                };
+                script.onerror = () => reject(new Error('Failed to load local Monaco'));
+                document.head.appendChild(script);
+            } else {
+                // For browser, use CDN
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js';
+                script.onload = () => {
+                    require.config({ 
+                        paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }
+                    });
+                    require(['vs/editor/editor.main'], function() {
+                        window.monacoReady = true;
+                        console.log('✅ Monaco Editor loaded (CDN)');
+                        resolve();
+                    });
+                };
+                script.onerror = () => reject(new Error('Failed to load Monaco from CDN'));
+                document.head.appendChild(script);
+            }
+        });
+    }
+    
     // Monaco Editor 初始化
     window.monacoEditor = null;
     window.monacoReady = false;
     
-    // 配置 Monaco 加载路径 (本地资源)
-    require.config({ 
-        paths: { 
-            'vs': 'monaco/vs' 
-        }
-    });
-    
-    // 预加载 Monaco
-    require(['vs/editor/editor.main'], function() {
-        window.monacoReady = true;
-        console.log('✅ Monaco Editor loaded successfully');
+    // Load Monaco dynamically based on environment
+    loadMonaco().catch(err => {
+        console.error('❌ Monaco Editor failed to load:', err);
+        // App will show fallback message in XML view
     });
 
     // --- State & Elements ---
