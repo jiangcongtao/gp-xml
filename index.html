@@ -17,6 +17,14 @@
             --border-color: #e5e7eb;
             --hover-color: #eff6ff;
             --selected-bg: #dbeafe;
+            --card-header-bg: #ffffff;
+            --table-header-bg: #f8fafc;
+            --table-header-text: #64748b;
+            --parent-path-bg: #f0f7ff;
+            --error-bg: #fef2f2;
+            --error-text: #991b1b;
+            --error-border: #dc2626;
+            --secondary-text: #6b7280;
         }
 
         /* Dark Theme */
@@ -28,6 +36,14 @@
             --border-color: #374151;
             --hover-color: #1f2937;
             --selected-bg: #1e3a8a;
+            --card-header-bg: #1f2937;
+            --table-header-bg: #374151;
+            --table-header-text: #9ca3af;
+            --parent-path-bg: #1e3a8a;
+            --error-bg: #7f1d1d;
+            --error-text: #fecaca;
+            --error-border: #ef4444;
+            --secondary-text: #9ca3af;
         }
 
         * {
@@ -205,7 +221,7 @@
         }
 
         .tree-content.parent-path {
-            background-color: #f0f7ff;
+            background-color: var(--parent-path-bg);
             border-left: 3px solid var(--primary-color);
             padding-left: 5px;
         }
@@ -218,7 +234,7 @@
             align-items: center;
             justify-content: center;
             font-size: 0.7rem;
-            color: #9ca3af;
+            color: var(--secondary-text);
             transition: transform 0.2s;
         }
 
@@ -269,7 +285,14 @@
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 0.85rem;
+            background: var(--panel-bg);
+            color: var(--text-color);
             transition: all 0.2s;
+        }
+        
+        .tree-search-wrapper input::placeholder {
+            color: var(--secondary-text);
+            opacity: 0.6;
         }
 
         .tree-search-wrapper input:focus {
@@ -296,7 +319,7 @@
             display: flex;
             align-items: center;
             gap: 0.2rem;
-            color: #6b7280;
+            color: var(--secondary-text);
             cursor: pointer;
             user-select: none;
             white-space: nowrap;
@@ -304,16 +327,17 @@
 
         .tree-scope-group input[type="radio"] {
             cursor: pointer;
+            accent-color: var(--primary-color);
         }
 
         .tree-sort-btn {
             padding: 0.3rem 0.6rem;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            background: white;
+            background: var(--panel-bg);
             cursor: pointer;
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-color);
             transition: all 0.15s;
             display: flex;
             align-items: center;
@@ -341,7 +365,7 @@
             flex: 1;
             padding: 0;
             overflow-y: auto;
-            background-color: #f9fafb;
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
         }
@@ -379,7 +403,14 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 0.9rem;
+            background: var(--panel-bg);
+            color: var(--text-color);
             transition: all 0.2s;
+        }
+        
+        .search-input-wrapper input::placeholder {
+            color: var(--secondary-text);
+            opacity: 0.6;
         }
 
         .search-input-wrapper input:focus {
@@ -399,18 +430,19 @@
             align-items: center;
             gap: 0.3rem;
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--secondary-text);
             cursor: pointer;
             user-select: none;
         }
 
         .search-scope input[type="radio"] {
             cursor: pointer;
+            accent-color: var(--primary-color);
         }
 
         .search-info {
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--secondary-text);
             margin-top: 0.5rem;
         }
 
@@ -426,7 +458,7 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            color: #9ca3af;
+            color: var(--secondary-text);
             text-align: center;
         }
 
@@ -441,7 +473,7 @@
         .card-header {
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
-            background-color: #fff;
+            background-color: var(--card-header-bg);
         }
 
         .card-header h2 {
@@ -451,7 +483,7 @@
 
         .path-breadcrumb {
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--secondary-text);
             margin-top: 4px;
         }
 
@@ -467,10 +499,10 @@
         }
 
         th {
-            background-color: #f8fafc;
+            background-color: var(--table-header-bg);
             font-weight: 600;
             font-size: 0.85rem;
-            color: #64748b;
+            color: var(--table-header-text);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -482,7 +514,7 @@
         }
 
         th.sortable:hover {
-            background-color: #e2e8f0;
+            background-color: var(--hover-color);
         }
 
         .sort-indicator {
@@ -762,9 +794,9 @@
         }
 
         td.attr-value.validation-error {
-            background-color: #fef2f2;
-            color: #991b1b;
-            border-left: 3px solid #dc2626;
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border-left: 3px solid var(--error-border);
         }
 
         /* Responsive */
@@ -956,7 +988,7 @@
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: 500;
-            color: #6b7280;
+            color: var(--secondary-text);
             border-bottom: 2px solid transparent;
             transition: all 0.2s ease;
             margin-bottom: -1px;
@@ -1017,10 +1049,10 @@
             padding: 0.4rem 0.75rem;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            background: white;
+            background: var(--panel-bg);
             cursor: pointer;
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-color);
             transition: all 0.15s;
         }
 
@@ -1037,14 +1069,14 @@
         .xml-info {
             margin-left: auto;
             font-size: 0.8rem;
-            color: #9ca3af;
+            color: var(--secondary-text);
         }
 
         .xml-content {
             flex: 1;
             overflow: hidden;
             margin: 0 1rem;
-            background: #1e1e1e;
+            background: var(--panel-bg);
             padding: 1rem 1.5rem;
             position: relative;
         }
@@ -1136,9 +1168,9 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            color: #9ca3af;
+            color: var(--secondary-text);
             text-align: center;
-            background: #f9fafb;
+            background: var(--bg-color);
         }
 
         .xml-empty-state svg {
@@ -1240,25 +1272,59 @@
         </div>
         <div class="modal-body" id="help-modal-body">
             <h3 data-i18n="aboutApp">关于 XML Navigator</h3>
-            <p data-i18n="feature7">一个现代化的 XML 文件浏览器和编辑器，支持树形视图、语法高亮和帮助配置验证。</p>
+            <p data-i18n="appDescription">一个现代化的 XML 文件浏览器和编辑器，支持树形视图、语法高亮和帮助配置验证。</p>
             
             <h3 data-i18n="features">功能特性</h3>
             <ul>
-                <li data-i18n="feature1">树形视图：以层级结构浏览 XML 文档</li>
+                <li data-i18n="feature1">树形视图：以层级结构浏览 XML 文档，支持展开/折叠</li>
                 <li data-i18n="feature2">详情面板：查看节点属性和子元素的值</li>
                 <li data-i18n="feature3">搜索与过滤：快速定位特定的节点或属性</li>
+                <li data-i18n="feature8">节点搜索：按名称、值或两者搜索节点</li>
+                <li data-i18n="feature9">排序功能：支持自然顺序、升序、降序排列</li>
+                <li data-i18n="feature10">批量操作：一键展开或折叠所有节点</li>
+                <li data-i18n="feature7">XML 视图：使用 Monaco 编辑器查看原始 XML</li>
                 <li data-i18n="feature4">帮助配置：上传 JSON 配置文件进行字段验证</li>
                 <li data-i18n="feature5">主题切换：支持浅色和深色模式</li>
                 <li data-i18n="feature6">语言切换：支持中文和英文界面</li>
-                <li data-i18n="feature7">XML 视图：使用 Monaco 编辑器查看原始 XML</li>
+                <li data-i18n="feature11">状态持久化：自动保存和恢复应用状态</li>
+                <li data-i18n="feature12">父路径高亮：选中节点时高亮显示父级路径</li>
             </ul>
             
-            <h3 data-i18n="usage">使用方法</h3>
+            <h3 data-i18n="quickStart">快速开始</h3>
             <ul>
-                <li data-i18n="usage1">点击或拖放上传 XML 文件</li>
-                <li data-i18n="usage2">在树形视图中点击节点查看详情</li>
-                <li data-i18n="usage3">使用搜索框过滤节点或属性</li>
-                <li data-i18n="usage4">可选：上传帮助配置文件启用字段验证</li>
+                <li data-i18n="step1">1. 上传 XML 文件（拖放或点击上传区域）</li>
+                <li data-i18n="step2">2. 在树形视图中浏览 XML 结构</li>
+                <li data-i18n="step3">3. 点击节点查看详细属性</li>
+                <li data-i18n="step4">4. 使用搜索框快速定位内容</li>
+                <li data-i18n="step5">5. 可选：加载帮助配置文件进行验证</li>
+            </ul>
+            
+            <h3 data-i18n="treeViewControls">树视图控制</h3>
+            <ul>
+                <li data-i18n="searchBox">搜索框：搜索节点名称或值</li>
+                <li data-i18n="searchScope">搜索范围：名称/值/全部</li>
+                <li data-i18n="sortButton">排序按钮：切换排序方式</li>
+                <li data-i18n="expandButton">展开/折叠按钮：批量操作所有节点</li>
+            </ul>
+            
+            <h3 data-i18n="detailControls">详情面板控制</h3>
+            <ul>
+                <li data-i18n="filterAttrs">搜索框：过滤属性和值</li>
+                <li data-i18n="filterScope">搜索范围：仅属性/仅值/全部</li>
+                <li data-i18n="sortHeader">点击表头：排序属性列表</li>
+            </ul>
+            
+            <h3 data-i18n="xmlViewControls">XML 视图控制</h3>
+            <ul>
+                <li data-i18n="foldButtons">折叠/展开按钮：控制代码折叠</li>
+                <li data-i18n="lineStats">行号统计：显示文件信息</li>
+            </ul>
+            
+            <h3 data-i18n="helpSchema">帮助配置格式</h3>
+            <p data-i18n="schemaDesc">JSON 格式，支持字段验证、类型检查和提示信息。</p>
+            <ul>
+                <li data-i18n="schemaSupport">支持的字段：type, format, description, example, required</li>
+                <li data-i18n="schemaTypes">支持的类型：string, integer, number, date, boolean</li>
             </ul>
             
             <h3 data-i18n="author">作者</h3>
@@ -1487,7 +1553,7 @@
             reset: '重置',
             help: '帮助',
             theme: '主题',
-            language: '语言',
+            language: '中',
             
             // View Tabs
             treeView: '树形视图',
@@ -1583,19 +1649,48 @@
             // Help Modal
             helpTitle: '帮助',
             aboutApp: '关于 XML Navigator',
+            appDescription: '一个现代化的 XML 文件浏览器和编辑器，支持树形视图、语法高亮和帮助配置验证。',
             features: '功能特性',
-            feature1: '树形视图：以层级结构浏览 XML 文档',
+            feature1: '树形视图：以层级结构浏览 XML 文档，支持展开/折叠',
             feature2: '详情面板：查看节点属性和子元素的值',
             feature3: '搜索与过滤：快速定位特定的节点或属性',
             feature4: '帮助配置：上传 JSON 配置文件进行字段验证',
             feature5: '主题切换：支持浅色和深色模式',
             feature6: '语言切换：支持中文和英文界面',
             feature7: 'XML 视图：使用 Monaco 编辑器查看原始 XML',
+            feature8: '节点搜索：按名称、值或两者搜索节点',
+            feature9: '排序功能：支持自然顺序、升序、降序排列',
+            feature10: '批量操作：一键展开或折叠所有节点',
+            feature11: '状态持久化：自动保存和恢复应用状态',
+            feature12: '父路径高亮：选中节点时高亮显示父级路径',
+            quickStart: '快速开始',
+            step1: '1. 上传 XML 文件（拖放或点击上传区域）',
+            step2: '2. 在树形视图中浏览 XML 结构',
+            step3: '3. 点击节点查看详细属性',
+            step4: '4. 使用搜索框快速定位内容',
+            step5: '5. 可选：加载帮助配置文件进行验证',
+            treeViewControls: '树视图控制',
+            searchBox: '搜索框：搜索节点名称或值',
+            searchScope: '搜索范围：名称/值/全部',
+            sortButton: '排序按钮：切换排序方式',
+            expandButton: '展开/折叠按钮：批量操作所有节点',
+            detailControls: '详情面板控制',
+            filterAttrs: '搜索框：过滤属性和值',
+            filterScope: '搜索范围：仅属性/仅值/全部',
+            sortHeader: '点击表头：排序属性列表',
+            xmlViewControls: 'XML 视图控制',
+            foldButtons: '折叠/展开按钮：控制代码折叠',
+            lineStats: '行号统计：显示文件信息',
             usage: '使用方法',
             usage1: '点击或拖放上传 XML 文件',
             usage2: '在树形视图中点击节点查看详情',
             usage3: '使用搜索框过滤节点或属性',
             usage4: '可选：上传帮助配置文件启用字段验证',
+            usage5: '切换主题和语言以获得更好的体验',
+            helpSchema: '帮助配置格式',
+            schemaDesc: 'JSON 格式，支持字段验证、类型检查和提示信息。',
+            schemaSupport: '支持的字段：type, format, description, example, required',
+            schemaTypes: '支持的类型：string, integer, number, date, boolean',
             author: '作者',
             authorInfo: 'Nick Jiang',
             close: '关闭',
@@ -1617,7 +1712,7 @@
             reset: 'Reset',
             help: 'Help',
             theme: 'Theme',
-            language: 'Language',
+            language: 'En',
             
             // View Tabs
             treeView: 'Tree View',
@@ -1713,19 +1808,48 @@
             // Help Modal
             helpTitle: 'Help',
             aboutApp: 'About XML Navigator',
+            appDescription: 'A modern XML file browser and editor with tree view, syntax highlighting, and schema validation.',
             features: 'Features',
-            feature1: 'Tree View: Browse XML documents in hierarchical structure',
+            feature1: 'Tree View: Browse XML in hierarchical structure with expand/collapse',
             feature2: 'Detail Panel: View node attributes and child element values',
             feature3: 'Search & Filter: Quickly locate specific nodes or attributes',
             feature4: 'Help Config: Upload JSON config file for field validation',
             feature5: 'Theme Toggle: Support light and dark mode',
             feature6: 'Language Switch: Support Chinese and English interface',
             feature7: 'XML View: View raw XML with Monaco editor',
+            feature8: 'Node Search: Search by name, value, or both',
+            feature9: 'Sorting: Natural order, ascending, or descending',
+            feature10: 'Batch Operations: Expand or collapse all nodes at once',
+            feature11: 'State Persistence: Auto-save and restore application state',
+            feature12: 'Parent Path Highlighting: Highlight parent path when node selected',
+            quickStart: 'Quick Start',
+            step1: '1. Upload XML file (drag & drop or click upload area)',
+            step2: '2. Browse XML structure in tree view',
+            step3: '3. Click node to view detailed attributes',
+            step4: '4. Use search box to quickly locate content',
+            step5: '5. Optional: Load help config file for validation',
+            treeViewControls: 'Tree View Controls',
+            searchBox: 'Search Box: Search node name or value',
+            searchScope: 'Search Scope: Name / Value / Both',
+            sortButton: 'Sort Button: Toggle sort order',
+            expandButton: 'Expand/Collapse Button: Batch operation on all nodes',
+            detailControls: 'Detail Panel Controls',
+            filterAttrs: 'Search Box: Filter attributes and values',
+            filterScope: 'Filter Scope: Property Only / Value Only / Both',
+            sortHeader: 'Click Header: Sort attribute list',
+            xmlViewControls: 'XML View Controls',
+            foldButtons: 'Fold/Unfold Buttons: Control code folding',
+            lineStats: 'Line Stats: Display file information',
             usage: 'Usage',
             usage1: 'Click or drag-drop to upload XML file',
             usage2: 'Click node in tree view to see details',
             usage3: 'Use search box to filter nodes or attributes',
             usage4: 'Optional: Upload help config file to enable field validation',
+            usage5: 'Toggle theme and language for better experience',
+            helpSchema: 'Help Schema Format',
+            schemaDesc: 'JSON format with field validation, type checking and tooltips.',
+            schemaSupport: 'Supported fields: type, format, description, example, required',
+            schemaTypes: 'Supported types: string, integer, number, date, boolean',
             author: 'Author',
             authorInfo: 'Nick Jiang',
             close: 'Close',
@@ -1792,6 +1916,22 @@
         // Update help upload button text if no file loaded
         if (!helpSchemaFilename) {
             helpStatusText.textContent = t('loadHelpConfig');
+        }
+        
+        // Update tree view empty state (if no file loaded)
+        if (!xmlDoc) {
+            const treeEmptyState = treeContainer.querySelector('.empty-state');
+            if (treeEmptyState) {
+                treeEmptyState.textContent = t('noFileLoaded');
+            }
+        }
+        
+        // Update detail panel empty state (if no node selected)
+        if (!currentNode) {
+            const detailEmptyState = detailContent.querySelector('.empty-state p');
+            if (detailEmptyState) {
+                detailEmptyState.textContent = t('selectNode');
+            }
         }
         
         // Re-render tree and details if XML is loaded
@@ -1888,7 +2028,7 @@
         helpStatusText.textContent = t('loadHelpConfig');
         
         // Clear tree
-        treeContainer.innerHTML = `<div class="empty-state" style="height: auto; padding-top: 2rem;">${t('noFileLoaded')}</div>`;
+        treeContainer.innerHTML = `<div class="empty-state" style="height: auto; padding-top: 2rem;">${escapeHtml(t('noFileLoaded'))}</div>`;
         treeControls.classList.remove('visible');
         
         // Reset detail view
@@ -3274,8 +3414,8 @@
             console.error('Monaco initialization error:', err);
             xmlContentEl.innerHTML = `
                 <div class="xml-empty-state">
-                    <p style="color: #dc2626;">${t('editorInitFailed')}: ${err.message}</p>
-                    <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">${t('checkConsole')}</p>
+                    <p style="color: var(--error-border);">${t('editorInitFailed')}: ${err.message}</p>
+                    <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 0.5rem;">${t('checkConsole')}</p>
                 </div>`;
         }
     }
@@ -3324,7 +3464,7 @@
                     setTimeout(() => restoreNodeSelection(currentNodePath), 0);
                 }
             } else {
-                treeContainer.innerHTML = `<div class="empty-state" style="height: auto; padding-top: 2rem;">${t('noMatchingNodes')}</div>`;
+                treeContainer.innerHTML = `<div class="empty-state" style="height: auto; padding-top: 2rem;">${escapeHtml(t('noMatchingNodes'))}</div>`;
             }
         } catch (err) {
             console.error("Error rendering tree:", err);
@@ -3715,7 +3855,7 @@
         if (sortedData.length === 0) {
             html += `
                 <tr>
-                    <td colspan="2" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                    <td colspan="2" style="text-align: center; color: var(--secondary-text); padding: 2rem;">
                         ${t('noMatchingResults')}
                     </td>
                 </tr>
@@ -3805,7 +3945,7 @@
                 <svg style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                <p>${t('selectNode')}</p>
+                <p>${escapeHtml(t('selectNode'))}</p>
             </div>`;
     }
 
