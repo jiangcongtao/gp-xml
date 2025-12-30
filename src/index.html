@@ -64,21 +64,42 @@
         /* Header & Upload Area */
         header {
             background: var(--panel-bg);
-            padding: 1rem 2rem;
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header-main {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 0.75rem 1.5rem;
             gap: 1rem;
-            flex-wrap: wrap;
+        }
+
+        .header-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+            gap: 1rem;
+        }
+
+        .file-upload-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
         }
 
         h1 {
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--primary-color);
+            white-space: nowrap;
         }
 
         #drop-zone {
@@ -86,27 +107,53 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            border: 2px dashed var(--border-color);
+            border: 1px solid var(--border-color);
             border-radius: 0.5rem;
-            padding: 0.5rem 1.5rem;
+            padding: 0.5rem 1rem;
             transition: all 0.2s ease;
             cursor: pointer;
             color: var(--text-color);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            background: var(--panel-bg);
+            min-width: 180px;
+            max-width: 320px;
             flex: 1;
-            min-width: 200px;
-            opacity: 0.7;
+        }
+
+        #drop-zone:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: var(--hover-color);
         }
 
         #drop-zone .material-symbols-outlined {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        #drop-zone-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         #drop-zone.dragover {
             border-color: var(--primary-color);
+            border-style: dashed;
             background-color: var(--hover-color);
             color: var(--primary-color);
-            opacity: 1;
+        }
+
+        #drop-zone.loaded {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        [data-theme="dark"] #drop-zone.loaded {
+            border-color: #60a5fa;
+            color: #60a5fa;
+            background-color: rgba(59, 130, 246, 0.1);
         }
 
         /* Header Controls */
@@ -114,7 +161,6 @@
             display: flex;
             gap: 0.5rem;
             align-items: center;
-            flex-wrap: wrap;
         }
 
         .header-btn {
@@ -548,10 +594,9 @@
             align-items: center;
             border-radius: 0.5rem;
             transition: all 0.2s ease;
-        }
-
-        .help-upload-wrapper.dragover {
-            transform: scale(1.02);
+            min-width: 180px;
+            max-width: 320px;
+            flex: 1;
         }
 
         .help-upload-wrapper.dragover .help-upload-btn {
@@ -559,7 +604,6 @@
             border-style: dashed;
             background-color: var(--hover-color);
             color: var(--primary-color);
-            opacity: 1;
         }
 
         .help-upload-btn {
@@ -568,34 +612,37 @@
             justify-content: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            border: 2px dashed var(--border-color);
+            border: 1px solid var(--border-color);
             border-radius: 0.5rem;
             background: var(--panel-bg);
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-color);
             transition: all 0.2s ease;
-            max-width: 280px;
-            opacity: 0.7;
+            width: 100%;
         }
 
         .help-upload-btn:hover {
             border-color: var(--primary-color);
             color: var(--primary-color);
             background-color: var(--hover-color);
-            opacity: 1;
         }
 
         .help-upload-btn.loaded {
             border-color: #10b981;
-            border-style: solid;
             color: #10b981;
             background-color: #ecfdf5;
-            opacity: 1;
+        }
+
+        [data-theme="dark"] .help-upload-btn.loaded {
+            border-color: #34d399;
+            color: #34d399;
+            background-color: rgba(16, 185, 129, 0.1);
         }
 
         .help-upload-btn .material-symbols-outlined {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            flex-shrink: 0;
         }
 
         #help-status-text {
@@ -799,6 +846,261 @@
         }
 
         /* ==================== */
+        /* Editable Value Styles */
+        /* ==================== */
+        td.attr-value.editable {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        td.attr-value.editable:hover {
+            background-color: var(--hover-color);
+        }
+
+        td.attr-value.editable:hover::after {
+            content: '✎';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            opacity: 0.7;
+        }
+
+        td.attr-value.editing {
+            padding: 0;
+            background-color: var(--panel-bg);
+        }
+
+        .edit-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px;
+        }
+
+        .edit-input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 2px solid var(--primary-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: var(--panel-bg);
+            color: var(--text-color);
+            outline: none;
+            min-width: 100px;
+        }
+
+        .edit-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .edit-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .edit-btn.save {
+            background: #22c55e;
+            color: white;
+        }
+
+        .edit-btn.save:hover {
+            background: #16a34a;
+        }
+
+        .edit-btn.cancel {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .edit-btn.cancel:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Edit Modal (for mobile) */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10002;
+        }
+
+        .edit-modal.visible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-modal-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .edit-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 500px;
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .edit-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--table-header-bg);
+        }
+
+        .edit-modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .edit-modal-field-name {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .edit-modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--secondary-text);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .edit-modal-close:hover {
+            background: var(--hover-color);
+            color: var(--text-color);
+        }
+
+        .edit-modal-body {
+            padding: 1.25rem;
+        }
+
+        .edit-modal-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: var(--panel-bg);
+            color: var(--text-color);
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .edit-modal-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .edit-modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--table-header-bg);
+        }
+
+        .edit-modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .edit-modal-btn.cancel {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .edit-modal-btn.cancel:hover {
+            background: #d1d5db;
+        }
+
+        .edit-modal-btn.save {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .edit-modal-btn.save:hover {
+            background: #2563eb;
+        }
+
+        /* Export button disabled state */
+        .header-btn:disabled,
+        .mobile-menu-item:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .header-btn:disabled:hover {
+            border-color: var(--border-color);
+            color: var(--text-color);
+            background: var(--panel-bg);
+            transform: none;
+        }
+
+        /* ==================== */
         /* Mobile-only Elements (Hidden on Desktop by default) */
         /* ==================== */
         .mobile-hamburger,
@@ -831,53 +1133,48 @@
             /* Header Optimizations */
             /* ==================== */
             header {
+                gap: 0;
+            }
+            
+            .header-main {
                 padding: 0.5rem 0.75rem;
-                flex-wrap: nowrap;
-                height: auto;
-                min-height: 56px;
+                min-height: 48px;
+                gap: 0.5rem;
+            }
+            
+            .header-toolbar {
+                padding: 0.4rem 0.75rem;
+            }
+            
+            .file-upload-group {
                 gap: 0.5rem;
             }
             
             h1 {
-                font-size: 1rem;
+                font-size: 0.95rem;
                 white-space: nowrap;
                 flex-shrink: 0;
                 display: flex;
                 align-items: center;
             }
             
-            /* Hide title text on mobile, show only icon */
-            h1 .app-title {
-                display: none;
-            }
-            
             h1 .material-symbols-outlined {
-                margin-right: 0;
-                font-size: 1.4rem;
+                font-size: 1.2rem;
             }
             
             #drop-zone {
                 font-size: 0.75rem;
                 padding: 0.4rem 0.6rem;
-                min-width: 80px;
-                flex: 1;
+                min-width: 0;
                 max-width: none;
             }
             
             #drop-zone .material-symbols-outlined {
                 font-size: 1rem;
-                flex-shrink: 0;
             }
             
-            #drop-zone-text {
-                flex: 1;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                min-width: 0;
-            }
-            
-            .help-upload-wrapper {
+            /* Hide schema upload button in toolbar on mobile (available in menu) */
+            .header-toolbar .help-upload-wrapper {
                 display: none;
             }
             
@@ -1420,6 +1717,37 @@
             #tree-view-container {
                 flex-direction: column;
             }
+            
+            /* ==================== */
+            /* Value Editing Mobile */
+            /* ==================== */
+            td.attr-value.editable:hover::after {
+                display: none;
+            }
+            
+            .edit-container {
+                flex-wrap: wrap;
+            }
+            
+            .edit-input {
+                width: 100%;
+                font-size: 16px; /* Prevent iOS zoom */
+            }
+            
+            .edit-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 4px;
+            }
+            
+            .edit-modal-content {
+                width: 95%;
+                max-height: 80vh;
+            }
+            
+            .edit-modal-input {
+                font-size: 16px; /* Prevent iOS zoom */
+            }
         }
 
         /* ==================== */
@@ -1812,41 +2140,51 @@
 <body>
 
 <header>
-    <h1><span class="material-symbols-outlined">code</span><span class="app-title">XML Navigator</span></h1>
-    <div id="drop-zone">
-        <span class="material-symbols-outlined">upload_file</span>
-        <span id="drop-zone-text">DRAG & DROP XML FILE HERE OR CLICK TO UPLOAD</span>
-    </div>
-    <input type="file" id="file-input" accept=".xml" style="display: none;">
-    <div class="help-upload-wrapper" id="help-drop-zone">
-        <button id="help-upload-btn" class="help-upload-btn">
-            <span class="material-symbols-outlined">schema</span>
-            <span id="help-status-text">加载帮助配置</span>
-        </button>
-        <input type="file" id="help-file-input" accept=".json" style="display: none;">
-    </div>
-    <div class="header-controls">
-        <button id="reset-btn" class="header-btn">
-            <span class="material-symbols-outlined">refresh</span>
-            <span data-i18n="reset">重置</span>
-        </button>
-        <button id="help-btn" class="header-btn">
-            <span class="material-symbols-outlined">help</span>
-            <span data-i18n="help">帮助</span>
-        </button>
-        <button id="theme-toggle-btn" class="header-btn">
-            <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
-            <span data-i18n="theme">主题</span>
-        </button>
-        <button id="lang-toggle-btn" class="header-btn">
-            <span class="material-symbols-outlined">language</span>
-            <span data-i18n="language">语言</span>
+    <div class="header-main">
+        <h1><span class="material-symbols-outlined">code</span><span class="app-title">XML Navigator</span></h1>
+        <div class="header-controls">
+            <button id="export-btn" class="header-btn" disabled>
+                <span class="material-symbols-outlined">download</span>
+                <span data-i18n="export">导出</span>
+            </button>
+            <button id="reset-btn" class="header-btn">
+                <span class="material-symbols-outlined">refresh</span>
+                <span data-i18n="reset">重置</span>
+            </button>
+            <button id="help-btn" class="header-btn">
+                <span class="material-symbols-outlined">help</span>
+                <span data-i18n="help">帮助</span>
+            </button>
+            <button id="theme-toggle-btn" class="header-btn">
+                <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+                <span data-i18n="theme">主题</span>
+            </button>
+            <button id="lang-toggle-btn" class="header-btn">
+                <span class="material-symbols-outlined">language</span>
+                <span data-i18n="language">语言</span>
+            </button>
+        </div>
+        <!-- Mobile Hamburger Menu Button -->
+        <button id="mobile-hamburger-btn" class="mobile-hamburger" style="display: none;">
+            <span class="material-symbols-outlined">menu</span>
         </button>
     </div>
-    <!-- Mobile Hamburger Menu Button -->
-    <button id="mobile-hamburger-btn" class="mobile-hamburger" style="display: none;">
-        <span class="material-symbols-outlined">menu</span>
-    </button>
+    <div class="header-toolbar">
+        <div class="file-upload-group">
+            <div id="drop-zone">
+                <span class="material-symbols-outlined">description</span>
+                <span id="drop-zone-text">拖放 XML 文件或点击上传</span>
+            </div>
+            <input type="file" id="file-input" accept=".xml" style="display: none;">
+            <div class="help-upload-wrapper" id="help-drop-zone">
+                <button id="help-upload-btn" class="help-upload-btn">
+                    <span class="material-symbols-outlined">schema</span>
+                    <span id="help-status-text">加载模式文件</span>
+                </button>
+                <input type="file" id="help-file-input" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
 </header>
 
 <!-- Mobile Side Menu -->
@@ -1878,6 +2216,11 @@
             <button id="mobile-lang-toggle-btn" class="mobile-menu-item">
                 <span class="material-symbols-outlined">language</span>
                 <span data-i18n="language">语言</span>
+            </button>
+            <!-- Export -->
+            <button id="mobile-export-btn" class="mobile-menu-item" disabled>
+                <span class="material-symbols-outlined">download</span>
+                <span data-i18n="export">导出</span>
             </button>
             <!-- Help -->
             <button id="mobile-help-btn" class="mobile-menu-item">
@@ -1983,6 +2326,27 @@
     </div>
 </div>
 
+<!-- Edit Value Modal -->
+<div id="edit-modal" class="edit-modal">
+    <div class="edit-modal-overlay"></div>
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <div>
+                <h3 data-i18n="editValue">编辑值</h3>
+                <div class="edit-modal-field-name" id="edit-modal-field-name"></div>
+            </div>
+            <button class="edit-modal-close" id="edit-modal-close">✕</button>
+        </div>
+        <div class="edit-modal-body">
+            <textarea id="edit-modal-input" class="edit-modal-input" placeholder=""></textarea>
+        </div>
+        <div class="edit-modal-footer">
+            <button id="edit-modal-cancel" class="edit-modal-btn cancel" data-i18n="cancel">取消</button>
+            <button id="edit-modal-save" class="edit-modal-btn save" data-i18n="save">保存</button>
+        </div>
+    </div>
+</div>
+
 <main>
     <!-- Mobile Detail Overlay -->
     <div id="mobile-detail-overlay" class="mobile-detail-overlay"></div>
@@ -2082,7 +2446,7 @@
                     </label>
                     <label>
                         <input type="radio" name="search-scope" value="both" checked />
-                        <span data-i18n="propertyOrValue">PROPERTY/TAG 或 VALUE</span>
+                        <span data-i18n="searchBoth">全部</span>
                     </label>
                 </div>
                 <!-- Mobile Chip Buttons for Detail Search Scope -->
@@ -2291,7 +2655,6 @@
             searchPropertyPlaceholder: '搜索 PROPERTY/TAG 或 VALUE...',
             propertyTag: '仅 PROPERTY/TAG',
             valueOnly: '仅 VALUE',
-            propertyOrValue: 'PROPERTY/TAG 或 VALUE',
             propertyTagHeader: 'PROPERTY / TAG',
             valueHeader: 'VALUE',
             
@@ -2418,7 +2781,15 @@
             resetConfirmTitle: '确认重置',
             resetConfirmMsg: '确定要重置吗？这将清除已加载的 XML 文件和帮助配置，但会保留您的主题和语言设置。',
             confirm: '确认',
-            cancel: '取消'
+            cancel: '取消',
+            
+            // Edit & Export
+            export: '导出',
+            exportSuccess: '文件导出成功',
+            noContentToExport: '没有可导出的内容',
+            editValue: '编辑值',
+            save: '保存',
+            clickToEdit: '点击编辑'
         },
         en: {
             // Application Name (don't translate)
@@ -2451,7 +2822,6 @@
             searchPropertyPlaceholder: 'Search PROPERTY/TAG or VALUE...',
             propertyTag: 'Property/Tag Only',
             valueOnly: 'Value Only',
-            propertyOrValue: 'Property/Tag or Value',
             propertyTagHeader: 'PROPERTY / TAG',
             valueHeader: 'VALUE',
             
@@ -2578,7 +2948,15 @@
             resetConfirmTitle: 'Confirm Reset',
             resetConfirmMsg: 'Are you sure you want to reset? This will clear the loaded XML file and help config, but will keep your theme and language settings.',
             confirm: 'Confirm',
-            cancel: 'Cancel'
+            cancel: 'Cancel',
+            
+            // Edit & Export
+            export: 'Export',
+            exportSuccess: 'File exported successfully',
+            noContentToExport: 'No content to export',
+            editValue: 'Edit Value',
+            save: 'Save',
+            clickToEdit: 'Click to edit'
         }
     };
     
@@ -2749,6 +3127,7 @@
         } else {
             dropZoneText.textContent = t('dropZoneText');
         }
+        dropZone.classList.remove('loaded');
         helpUploadBtn.classList.remove('loaded');
         helpStatusText.textContent = t('loadHelpConfig');
         
@@ -2816,6 +3195,9 @@
             currentFilePath = null;
             currentHelpFilePath = null;
         }
+        
+        // Disable export button
+        updateExportButtonState();
         
         console.log('✅ Application reset completed');
     }
@@ -3049,6 +3431,7 @@
         
         // Update UI
         dropZoneText.textContent = filename;
+        dropZone.classList.add('loaded');
         
         // Render tree
         try {
@@ -3078,6 +3461,10 @@
         
         // Save state to localStorage
         saveStateToStorage();
+        
+        // Enable export button
+        updateExportButtonState();
+        
         return true;
     }
     
@@ -3537,6 +3924,18 @@
     document.getElementById('xml-unfold-all').addEventListener('click', unfoldAllXmlNodes);
 
     // --- New Button Event Listeners ---
+    // Export button
+    const exportBtn = document.getElementById('export-btn');
+    exportBtn.addEventListener('click', () => {
+        if (isTauri && tauriInvoke) {
+            // Use Tauri save dialog
+            window.tauriSaveFileAs();
+        } else {
+            // Use browser download
+            exportXmlFile();
+        }
+    });
+    
     // Reset button
     resetBtn.addEventListener('click', resetApplication);
     
@@ -3646,6 +4045,37 @@
         mobileResetBtn.addEventListener('click', () => {
             closeMobileMenu();
             setTimeout(() => resetApplication(), 100);
+        });
+    }
+    
+    // Mobile export button
+    const mobileExportBtn = document.getElementById('mobile-export-btn');
+    if (mobileExportBtn) {
+        const handleMobileExport = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Check if there's content to export
+            if (!xmlRawContent) {
+                alert(t('noContentToExport'));
+                return;
+            }
+            
+            // Export first (before closing menu) to ensure it's triggered by user action
+            if (isTauri && tauriInvoke) {
+                closeMobileMenu();
+                window.tauriSaveFileAs();
+            } else {
+                exportXmlFile();
+                closeMobileMenu();
+            }
+        };
+        
+        mobileExportBtn.addEventListener('click', handleMobileExport);
+        // Add touchend for better mobile support
+        mobileExportBtn.addEventListener('touchend', (e) => {
+            if (mobileExportBtn.disabled) return;
+            handleMobileExport(e);
         });
     }
     
@@ -3804,6 +4234,7 @@
         }
 
         dropZoneText.textContent = file.name;
+        dropZone.classList.add('loaded');
         
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -3863,6 +4294,9 @@
             
             // Save state to localStorage
             saveStateToStorage();
+            
+            // Enable export button
+            updateExportButtonState();
         };
         
         reader.onerror = (err) => {
@@ -4777,7 +5211,9 @@
             .map(n => n.nodeValue.trim())
             .join(" ");
 
-        if (textContent) {
+        // If this node is a leaf node (no child elements), always show its value for editing (even if empty)
+        const isCurrentNodeLeaf = !hasElementChildren(node);
+        if (textContent || isCurrentNodeLeaf) {
             directData.push({ name: '#text', value: textContent });
         }
 
@@ -4849,10 +5285,14 @@
                 const hasHelpClass = itemHelp ? 'has-help' : '';
                 const errorsJson = hasError ? escapeHtml(JSON.stringify(validation.errors)) : '';
                 
+                // Determine if this value is editable (not for attributes starting with @)
+                const isEditable = !item.name.startsWith('@');
+                const editableClass = isEditable ? 'editable' : '';
+                
                 html += `
                     <tr>
                         <td class="attr-name ${hasHelpClass} ${errorClass}" data-item-index="${index}" data-item-name="${escapeHtml(item.name)}" data-item-path="${escapeHtml(itemPath)}" data-errors="${errorsJson}">${escapeHtml(item.name)}</td>
-                        <td class="attr-value ${errorClass}">${escapeHtml(item.value)}</td>
+                        <td class="attr-value ${editableClass} ${errorClass}" data-item-name="${escapeHtml(item.name)}" data-item-path="${escapeHtml(itemPath)}" data-original-value="${escapeHtml(item.value)}">${escapeHtml(item.value)}</td>
                     </tr>
                 `;
             });
@@ -4899,6 +5339,26 @@
                 });
                 cell.addEventListener('mouseleave', hideTooltip);
             }
+        });
+        
+        // Add click handlers for editable value cells
+        const editableCells = detailContent.querySelectorAll('td.attr-value.editable');
+        editableCells.forEach(cell => {
+            cell.addEventListener('click', (e) => {
+                // Don't start editing if already editing
+                if (cell.classList.contains('editing')) return;
+                
+                const itemName = cell.dataset.itemName;
+                const itemPath = cell.dataset.itemPath;
+                
+                // Check if on mobile
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    startEditValueMobile(cell, itemName, itemPath);
+                } else {
+                    startEditValue(cell, itemName, itemPath);
+                }
+            });
         });
     }
 
@@ -4963,6 +5423,309 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+    // =============================================
+    // Value Editing Functions
+    // =============================================
+    
+    // Track the currently editing cell
+    let currentEditingCell = null;
+    
+    // Start inline editing (desktop)
+    function startEditValue(cell, itemName, itemPath) {
+        // Close any existing edit
+        if (currentEditingCell && currentEditingCell !== cell) {
+            cancelEdit(currentEditingCell);
+        }
+        
+        const originalValue = cell.dataset.originalValue || cell.textContent;
+        currentEditingCell = cell;
+        cell.classList.add('editing');
+        
+        // Create edit container
+        const container = document.createElement('div');
+        container.className = 'edit-container';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'edit-input';
+        input.value = originalValue;
+        
+        const actions = document.createElement('div');
+        actions.className = 'edit-actions';
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'edit-btn save';
+        saveBtn.innerHTML = '✓';
+        saveBtn.title = t('save');
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'edit-btn cancel';
+        cancelBtn.innerHTML = '✕';
+        cancelBtn.title = t('cancel');
+        
+        actions.appendChild(saveBtn);
+        actions.appendChild(cancelBtn);
+        container.appendChild(input);
+        container.appendChild(actions);
+        
+        // Clear cell and add edit container
+        cell.textContent = '';
+        cell.appendChild(container);
+        
+        // Focus input and select all text
+        input.focus();
+        input.select();
+        
+        // Event handlers
+        saveBtn.onclick = (e) => {
+            e.stopPropagation();
+            saveEditedValue(cell, itemName, input.value, originalValue);
+        };
+        
+        cancelBtn.onclick = (e) => {
+            e.stopPropagation();
+            cancelEdit(cell);
+        };
+        
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveEditedValue(cell, itemName, input.value, originalValue);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelEdit(cell);
+            }
+        });
+        
+        // Prevent click from bubbling to cell
+        container.onclick = (e) => e.stopPropagation();
+    }
+    
+    // Start mobile editing (modal)
+    function startEditValueMobile(cell, itemName, itemPath) {
+        const originalValue = cell.dataset.originalValue || cell.textContent;
+        currentEditingCell = cell;
+        
+        const editModal = document.getElementById('edit-modal');
+        const editModalInput = document.getElementById('edit-modal-input');
+        const editModalFieldName = document.getElementById('edit-modal-field-name');
+        const editModalSave = document.getElementById('edit-modal-save');
+        const editModalCancel = document.getElementById('edit-modal-cancel');
+        const editModalClose = document.getElementById('edit-modal-close');
+        const editModalOverlay = editModal.querySelector('.edit-modal-overlay');
+        
+        // Set field name and value
+        editModalFieldName.textContent = itemName;
+        editModalInput.value = originalValue;
+        
+        // Show modal
+        editModal.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus input
+        setTimeout(() => editModalInput.focus(), 100);
+        
+        // Save handler
+        const handleSave = () => {
+            saveEditedValue(cell, itemName, editModalInput.value, originalValue);
+            closeEditModal();
+        };
+        
+        // Close handler
+        const handleClose = () => {
+            closeEditModal();
+        };
+        
+        // Keyboard handler
+        const handleKeydown = (e) => {
+            if (e.key === 'Escape') {
+                handleClose();
+            }
+        };
+        
+        function closeEditModal() {
+            editModal.classList.remove('visible');
+            document.body.style.overflow = '';
+            currentEditingCell = null;
+            
+            // Remove event listeners
+            editModalSave.removeEventListener('click', handleSave);
+            editModalCancel.removeEventListener('click', handleClose);
+            editModalClose.removeEventListener('click', handleClose);
+            editModalOverlay.removeEventListener('click', handleClose);
+            document.removeEventListener('keydown', handleKeydown);
+        }
+        
+        // Attach event listeners
+        editModalSave.addEventListener('click', handleSave);
+        editModalCancel.addEventListener('click', handleClose);
+        editModalClose.addEventListener('click', handleClose);
+        editModalOverlay.addEventListener('click', handleClose);
+        document.addEventListener('keydown', handleKeydown);
+    }
+    
+    // Save the edited value
+    function saveEditedValue(cell, itemName, newValue, originalValue) {
+        // Only save if value changed
+        if (newValue !== originalValue) {
+            // Update the XML DOM
+            if (updateXmlDomValue(itemName, newValue)) {
+                // Sync XML content
+                syncXmlContent();
+                
+                // Update cell display
+                cell.dataset.originalValue = newValue;
+            }
+        }
+        
+        // Restore cell to normal state
+        cell.classList.remove('editing');
+        cell.textContent = newValue;
+        currentEditingCell = null;
+    }
+    
+    // Cancel editing
+    function cancelEdit(cell) {
+        if (!cell) return;
+        
+        const originalValue = cell.dataset.originalValue || '';
+        cell.classList.remove('editing');
+        cell.textContent = originalValue;
+        currentEditingCell = null;
+    }
+    
+    // Update the XML DOM with new value
+    function updateXmlDomValue(itemName, newValue) {
+        if (!currentNode || !xmlDoc) return false;
+        
+        try {
+            if (itemName === '#text') {
+                // Scenario 2: Update direct text content of current node
+                // Find the text node(s) and update them
+                const textNodes = Array.from(currentNode.childNodes).filter(
+                    n => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim() !== ''
+                );
+                
+                if (textNodes.length > 0) {
+                    // Update first text node, remove others
+                    textNodes[0].nodeValue = newValue;
+                    for (let i = 1; i < textNodes.length; i++) {
+                        currentNode.removeChild(textNodes[i]);
+                    }
+                } else {
+                    // No text node exists, create one
+                    const textNode = xmlDoc.createTextNode(newValue);
+                    currentNode.appendChild(textNode);
+                }
+            } else {
+                // Scenario 1: Update child element's text content
+                const childElement = Array.from(currentNode.children).find(
+                    child => child.nodeName === itemName
+                );
+                
+                if (childElement) {
+                    childElement.textContent = newValue;
+                }
+            }
+            
+            return true;
+        } catch (err) {
+            console.error('Error updating XML DOM:', err);
+            return false;
+        }
+    }
+    
+    // Sync xmlRawContent and Monaco editor after DOM changes
+    function syncXmlContent() {
+        if (!xmlDoc) return;
+        
+        try {
+            // Serialize the DOM back to string
+            const serializer = new XMLSerializer();
+            xmlRawContent = serializer.serializeToString(xmlDoc);
+            
+            // If Monaco editor is rendered, update its content
+            if (window.monacoEditor) {
+                const currentPosition = window.monacoEditor.getPosition();
+                window.monacoEditor.setValue(xmlRawContent);
+                if (currentPosition) {
+                    window.monacoEditor.setPosition(currentPosition);
+                }
+            }
+            
+            // Mark XML view as needing re-render if we switch to it
+            xmlViewRendered = false;
+            
+            // Save to localStorage
+            saveStateToStorage();
+            
+            // Update export button state
+            updateExportButtonState();
+            
+        } catch (err) {
+            console.error('Error syncing XML content:', err);
+        }
+    }
+    
+    // Update export button enabled state
+    function updateExportButtonState() {
+        const exportBtn = document.getElementById('export-btn');
+        const mobileExportBtn = document.getElementById('mobile-export-btn');
+        
+        const hasContent = !!xmlRawContent;
+        
+        if (exportBtn) {
+            exportBtn.disabled = !hasContent;
+        }
+        if (mobileExportBtn) {
+            mobileExportBtn.disabled = !hasContent;
+        }
+    }
+    
+    // Export XML file (browser environment)
+    function exportXmlFile() {
+        if (!xmlRawContent) {
+            alert(t('noContentToExport'));
+            return;
+        }
+        
+        try {
+            // Create blob with XML content
+            const blob = new Blob([xmlRawContent], { type: 'application/xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create download link
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = xmlFilename || 'export.xml';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            
+            // Use different approach for mobile compatibility
+            if (typeof a.click === 'function') {
+                a.click();
+            } else {
+                // Fallback for some mobile browsers
+                const event = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                a.dispatchEvent(event);
+            }
+            
+            // Cleanup after a short delay to ensure download starts
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+        } catch (err) {
+            console.error('Export failed:', err);
+            alert(t('saveFileFailed') + ': ' + err.message);
+        }
     }
 
     // --- LocalStorage Persistence ---
@@ -5154,6 +5917,7 @@
                 
                 // Update drop zone text
                 dropZoneText.textContent = xmlFilename;
+                dropZone.classList.add('loaded');
                 
                 // Parse the XML
                 const parser = new DOMParser();
@@ -5218,6 +5982,9 @@
                         renderXmlView();
                     }
                 }
+                
+                // Update export button state
+                updateExportButtonState();
             }
         } catch (e) {
             console.warn('Failed to restore state from localStorage:', e);
