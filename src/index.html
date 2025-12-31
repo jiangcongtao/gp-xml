@@ -2011,6 +2011,80 @@
             font-size: 0.75rem;
         }
 
+        .xml-toolbar-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .xml-toolbar-btn:disabled:hover {
+            background-color: var(--panel-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .xml-toolbar-divider {
+            width: 1px;
+            height: 24px;
+            background-color: var(--border-color);
+            margin: 0 0.25rem;
+        }
+
+        .xml-edit-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .xml-edit-toggle.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .xml-edit-toggle.active:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        [data-theme="dark"] .xml-edit-toggle.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        [data-theme="dark"] .xml-edit-toggle.active:hover {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        /* XML Editor Edit Mode Indicator */
+        .xml-content.edit-mode {
+            border: 2px solid var(--primary-color);
+            border-radius: 4px;
+            margin: 0 0.75rem;
+        }
+
+        /* XML Syntax Error Indicator */
+        .xml-error-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-border);
+            border-radius: 4px;
+            color: var(--error-text);
+            font-size: 0.8rem;
+        }
+
+        .xml-error-indicator.visible {
+            display: flex;
+        }
+
+        .xml-error-indicator .material-symbols-outlined {
+            font-size: 1rem;
+        }
+
         .xml-info {
             margin-left: auto;
             font-size: 0.8rem;
@@ -2147,6 +2221,18 @@
             .xml-toolbar {
                 padding: 0.5rem 1rem;
                 flex-wrap: wrap;
+            }
+            
+            .xml-edit-controls {
+                gap: 0.25rem;
+            }
+            
+            .xml-edit-toggle span:not(.material-symbols-outlined) {
+                display: none;
+            }
+            
+            .xml-toolbar-divider {
+                display: none;
             }
             
             .xml-content pre {
@@ -2508,6 +2594,19 @@
                 <span class="btn-icon">▶</span>
                 <span data-i18n="unfoldAll">展开全部</span>
             </button>
+            <div class="xml-toolbar-divider"></div>
+            <div class="xml-edit-controls">
+                <button class="xml-toolbar-btn xml-edit-toggle" id="xml-edit-toggle">
+                    <span class="material-symbols-outlined">edit_off</span>
+                    <span data-i18n="editOff">只读</span>
+                </button>
+                <button class="xml-toolbar-btn" id="xml-undo" disabled title="Undo (Ctrl+Z)">
+                    <span class="material-symbols-outlined">undo</span>
+                </button>
+                <button class="xml-toolbar-btn" id="xml-redo" disabled title="Redo (Ctrl+Y)">
+                    <span class="material-symbols-outlined">redo</span>
+                </button>
+            </div>
             <span class="xml-info" id="xml-info"></span>
         </div>
         <div class="xml-content" id="xml-content">
@@ -2627,6 +2726,10 @@
     var currentView = 'tree'; // 'tree' | 'xml'
     var xmlViewRendered = false; // Track if XML view needs re-render
     
+    // Edit mode state
+    var isEditMode = false; // XML View edit mode toggle
+    var xmlContentChangeListener = null; // Monaco editor content change listener
+    
     // Help drop zone element
     const helpDropZone = document.getElementById('help-drop-zone');
     
@@ -2680,6 +2783,9 @@
             // XML View
             foldAll: '折叠全部',
             unfoldAll: '展开全部',
+            editOn: '编辑中',
+            editOff: '只读',
+            xmlSyntaxError: 'XML 语法错误',
             xmlEmptyState: '加载 XML 文件后在此查看原始内容',
             loadingEditor: '正在加载代码编辑器...',
             editorInitFailed: '初始化编辑器失败',
@@ -2847,6 +2953,9 @@
             // XML View
             foldAll: 'Fold All',
             unfoldAll: 'Unfold All',
+            editOn: 'Editing',
+            editOff: 'Read Only',
+            xmlSyntaxError: 'XML Syntax Error',
             xmlEmptyState: 'Load an XML file to view raw content here',
             loadingEditor: 'Loading code editor...',
             editorInitFailed: 'Failed to initialize editor',
@@ -3134,6 +3243,16 @@
         currentNode = null;
         currentNodePath = null;
         xmlViewRendered = false;
+        
+        // Reset edit mode
+        if (isEditMode) {
+            disableEditMode();
+        }
+        isEditMode = false;
+        if (xmlContentChangeListener) {
+            xmlContentChangeListener.dispose();
+            xmlContentChangeListener = null;
+        }
         
         // Clear help schema
         helpSchema = null;
@@ -3447,6 +3566,11 @@
         currentNodePath = null;
         currentNode = null;
         xmlViewRendered = false;
+        
+        // Reset edit mode when loading new file
+        if (isEditMode) {
+            disableEditMode();
+        }
         
         // Update UI
         dropZoneText.textContent = filename;
@@ -3941,6 +4065,11 @@
     // XML View toolbar buttons
     document.getElementById('xml-fold-all').addEventListener('click', foldAllXmlNodes);
     document.getElementById('xml-unfold-all').addEventListener('click', unfoldAllXmlNodes);
+    
+    // XML View edit mode buttons
+    document.getElementById('xml-edit-toggle').addEventListener('click', toggleEditMode);
+    document.getElementById('xml-undo').addEventListener('click', xmlUndo);
+    document.getElementById('xml-redo').addEventListener('click', xmlRedo);
 
     // --- New Button Event Listeners ---
     // Export button
@@ -4288,6 +4417,11 @@
             currentNodePath = null;
             currentNode = null;
             xmlViewRendered = false; // Force re-render of XML view
+            
+            // Reset edit mode when loading new file
+            if (isEditMode) {
+                disableEditMode();
+            }
             
             // Step 4: Render tree
             try {
@@ -4761,6 +4895,7 @@
     function switchView(viewName) {
         if (currentView === viewName) return;
         
+        const previousView = currentView;
         currentView = viewName;
         
         // Update Tab styles
@@ -4776,6 +4911,15 @@
         if (viewName === 'xml' && xmlRawContent) {
             if (!xmlViewRendered) {
                 renderXmlView();
+            }
+        }
+        
+        // If switching from XML View to Tree View, refresh tree to show any edits
+        if (previousView === 'xml' && viewName === 'tree' && xmlDoc) {
+            try {
+                renderTree(xmlDoc);
+            } catch (err) {
+                console.error('Error refreshing tree view:', err);
             }
         }
         
@@ -4821,7 +4965,7 @@
                 value: xmlRawContent,
                 language: 'xml',
                 theme: monacoTheme,
-                readOnly: true,
+                readOnly: !isEditMode,
                 automaticLayout: true,
                 minimap: { enabled: true },
                 folding: true,
@@ -4833,8 +4977,16 @@
                 fontFamily: "'Consolas', 'Monaco', 'Fira Code', monospace"
             });
             
+            // Set up content change listener if in edit mode
+            if (isEditMode) {
+                setupEditorChangeListener();
+            }
+            
             // Update info
             updateXmlInfo();
+            
+            // Update edit mode UI state
+            updateEditModeUI();
             
             xmlViewRendered = true;
         } catch (err) {
@@ -4872,6 +5024,256 @@
         const lines = xmlRawContent.split('\n').length;
         const size = (xmlRawContent.length / 1024).toFixed(2);
         xmlInfoEl.textContent = `${lines} ${t('lines')} | ${size} KB`;
+    }
+
+    // --- Edit Mode Functions ---
+    
+    // Simple debounce helper
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // Toggle edit mode
+    function toggleEditMode() {
+        if (isEditMode) {
+            disableEditMode();
+        } else {
+            enableEditMode();
+        }
+    }
+    
+    // Enable edit mode
+    function enableEditMode() {
+        if (!window.monacoEditor || !xmlRawContent) return;
+        
+        isEditMode = true;
+        
+        // Update Monaco editor to be editable
+        window.monacoEditor.updateOptions({ readOnly: false });
+        
+        // Initialize version tracking for undo/redo state
+        const model = window.monacoEditor.getModel();
+        if (model) {
+            initialModelVersionId = model.getAlternativeVersionId();
+            lastModelVersionId = initialModelVersionId;
+        }
+        
+        // Set up content change listener
+        setupEditorChangeListener();
+        
+        // Update UI
+        updateEditModeUI();
+        
+        console.log('✅ Edit mode enabled');
+    }
+    
+    // Disable edit mode
+    function disableEditMode() {
+        if (!window.monacoEditor) return;
+        
+        isEditMode = false;
+        
+        // Update Monaco editor to be read-only
+        window.monacoEditor.updateOptions({ readOnly: true });
+        
+        // Remove content change listener
+        if (xmlContentChangeListener) {
+            xmlContentChangeListener.dispose();
+            xmlContentChangeListener = null;
+        }
+        
+        // Update UI
+        updateEditModeUI();
+        
+        console.log('✅ Edit mode disabled');
+    }
+    
+    // Update edit mode UI elements
+    function updateEditModeUI() {
+        const editToggleBtn = document.getElementById('xml-edit-toggle');
+        const xmlContentEl = document.getElementById('xml-content');
+        
+        if (!editToggleBtn) return;
+        
+        const icon = editToggleBtn.querySelector('.material-symbols-outlined');
+        const text = editToggleBtn.querySelector('[data-i18n]');
+        
+        if (isEditMode) {
+            editToggleBtn.classList.add('active');
+            if (icon) icon.textContent = 'edit';
+            if (text) {
+                text.setAttribute('data-i18n', 'editOn');
+                text.textContent = t('editOn');
+            }
+            if (xmlContentEl) xmlContentEl.classList.add('edit-mode');
+        } else {
+            editToggleBtn.classList.remove('active');
+            if (icon) icon.textContent = 'edit_off';
+            if (text) {
+                text.setAttribute('data-i18n', 'editOff');
+                text.textContent = t('editOff');
+            }
+            if (xmlContentEl) xmlContentEl.classList.remove('edit-mode');
+        }
+        
+        // Update undo/redo button states
+        updateUndoRedoState();
+    }
+    
+    // Track initial version for undo/redo state
+    var initialModelVersionId = null;
+    var lastModelVersionId = null;
+    
+    // Update undo/redo button states based on Monaco editor state
+    function updateUndoRedoState() {
+        const undoBtn = document.getElementById('xml-undo');
+        const redoBtn = document.getElementById('xml-redo');
+        
+        if (!undoBtn || !redoBtn) return;
+        
+        if (!isEditMode || !window.monacoEditor) {
+            // Not in edit mode - disable both buttons
+            undoBtn.disabled = true;
+            redoBtn.disabled = true;
+            return;
+        }
+        
+        const model = window.monacoEditor.getModel();
+        if (!model) {
+            undoBtn.disabled = true;
+            redoBtn.disabled = true;
+            return;
+        }
+        
+        const currentVersionId = model.getAlternativeVersionId();
+        
+        // Can undo if current version is different from initial version
+        undoBtn.disabled = (currentVersionId === initialModelVersionId);
+        
+        // Can redo if we've undone something (current version < last recorded version)
+        redoBtn.disabled = (currentVersionId >= lastModelVersionId);
+    }
+    
+    // Track model version changes
+    function trackModelVersion() {
+        if (!window.monacoEditor) return;
+        
+        const model = window.monacoEditor.getModel();
+        if (model) {
+            const currentVersionId = model.getAlternativeVersionId();
+            // Update last version if it's a new change (not from undo)
+            if (currentVersionId > lastModelVersionId) {
+                lastModelVersionId = currentVersionId;
+            }
+        }
+    }
+    
+    // Set up Monaco editor content change listener
+    function setupEditorChangeListener() {
+        if (!window.monacoEditor) return;
+        
+        // Remove existing listener if any
+        if (xmlContentChangeListener) {
+            xmlContentChangeListener.dispose();
+        }
+        
+        // Debounced content change handler
+        const debouncedOnChange = debounce(onXmlContentChange, 500);
+        
+        // Add new listener
+        xmlContentChangeListener = window.monacoEditor.onDidChangeModelContent(() => {
+            // Track version for undo/redo state
+            trackModelVersion();
+            // Update undo/redo button states immediately
+            updateUndoRedoState();
+            // Process content change (debounced)
+            debouncedOnChange();
+        });
+    }
+    
+    // Handle XML content change (debounced)
+    function onXmlContentChange() {
+        if (!window.monacoEditor || !isEditMode) return;
+        
+        const newContent = window.monacoEditor.getValue();
+        
+        // Parse XML to check for errors
+        const parser = new DOMParser();
+        const parsedDoc = parser.parseFromString(newContent, "text/xml");
+        
+        // Check for parser errors
+        const parserError = parsedDoc.getElementsByTagName("parsererror")[0] || 
+                            parsedDoc.querySelector("parsererror");
+        
+        if (parserError) {
+            // Show XML syntax error indicator (don't block editing)
+            showXmlError(parserError.textContent);
+            // Still update raw content for undo/redo to work
+            xmlRawContent = newContent;
+            updateXmlInfo();
+            return;
+        }
+        
+        // Valid XML - update state and sync Tree View
+        clearXmlError();
+        xmlRawContent = newContent;
+        xmlDoc = parsedDoc;
+        
+        // Re-render Tree View to sync changes
+        try {
+            renderTree(xmlDoc);
+        } catch (err) {
+            console.error('Error rendering tree after edit:', err);
+        }
+        
+        // Update info display
+        updateXmlInfo();
+        
+        // Save to localStorage
+        saveStateToStorage();
+        
+        // Update export button state
+        updateExportButtonState();
+    }
+    
+    // Show XML syntax error indicator
+    function showXmlError(errorText) {
+        const xmlInfoEl = document.getElementById('xml-info');
+        if (xmlInfoEl) {
+            const shortError = errorText.split('\n')[0].substring(0, 50);
+            xmlInfoEl.innerHTML = `<span style="color: var(--error-text);">⚠ ${t('xmlSyntaxError')}</span>`;
+        }
+    }
+    
+    // Clear XML syntax error indicator
+    function clearXmlError() {
+        // updateXmlInfo will restore normal display
+    }
+    
+    // Undo action
+    function xmlUndo() {
+        if (window.monacoEditor && isEditMode) {
+            window.monacoEditor.trigger('keyboard', 'undo', null);
+            // Update button states after a short delay to let Monaco process
+            setTimeout(updateUndoRedoState, 10);
+        }
+    }
+    
+    // Redo action
+    function xmlRedo() {
+        if (window.monacoEditor && isEditMode) {
+            window.monacoEditor.trigger('keyboard', 'redo', null);
+            // Update button states after a short delay to let Monaco process
+            setTimeout(updateUndoRedoState, 10);
+        }
     }
 
     // --- Tree Rendering ---
