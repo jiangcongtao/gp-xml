@@ -655,7 +655,9 @@
         .help-tooltip {
             position: fixed;
             z-index: 10000;
-            max-width: 320px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
             padding: 0;
             background: #1f2937;
             color: #f9fafb;
@@ -701,6 +703,9 @@
             font-weight: 600;
             color: #60a5fa;
             border-bottom: 1px solid #4b5563;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
 
         .help-tooltip-error {
@@ -768,6 +773,8 @@
         .help-tooltip-value {
             flex: 1;
             color: #f3f4f6;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .help-tooltip-desc {
@@ -784,6 +791,9 @@
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 0.8rem;
             color: #fbbf24;
+            word-break: break-all;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         /* Hoverable elements with help */
@@ -1642,12 +1652,14 @@
             /* ==================== */
             .help-tooltip {
                 max-width: calc(100vw - 20px);
+                max-height: 70vh;
                 font-size: 0.8rem;
             }
             
             .help-tooltip-header {
                 padding: 0.5rem 0.75rem;
                 font-size: 0.85rem;
+                word-break: break-word;
             }
             
             .help-tooltip-body {
@@ -4649,8 +4661,8 @@
             }
         }
         
-        // 3. Format validation (regex) - only for string type or when type is not date
-        if (helpContent.format && helpContent.type !== 'date') {
+        // 3. Format validation (regex) - only for string type, skip date and decimal (handled in validateType)
+        if (helpContent.format && helpContent.type !== 'date' && helpContent.type !== 'decimal') {
             try {
                 const regex = new RegExp(helpContent.format);
                 if (!regex.test(trimmedValue)) {
@@ -4682,6 +4694,25 @@
             case 'number':
                 if (isNaN(parseFloat(value)) || !isFinite(value)) {
                     return `${t('typeError')}：${t('expectNumber')} "${value}"`;
+                }
+                return null;
+                
+            case 'decimal':
+                // Validate decimal format (integer or decimal number)
+                if (!/^-?\d+(\.\d+)?$/.test(value)) {
+                    return `${t('typeError')}：${t('expectNumber')} "${value}"`;
+                }
+                // If format specifies max decimal places (e.g., "最多2位小数")
+                if (format) {
+                    const maxDecimalMatch = format.match(/最多(\d+)位小数/);
+                    if (maxDecimalMatch) {
+                        const maxDecimals = parseInt(maxDecimalMatch[1], 10);
+                        const decimalPart = value.split('.')[1];
+                        // Integer values (no decimal part) are always valid
+                        if (decimalPart && decimalPart.length > maxDecimals) {
+                            return `${t('formatMismatch')}: ${format}`;
+                        }
+                    }
                 }
                 return null;
                 

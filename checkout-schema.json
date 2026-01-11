@@ -1,0 +1,1352 @@
+{
+    "version": "1.0",
+    "definitions": {
+        "Hotel_Code": {
+            "description": "酒店唯一标识码，由5位字母数字组成",
+            "type": "string",
+            "format": "^[A-Z0-9]{5}$",
+            "maxLength": 10,
+            "example": "PEKSH",
+            "required": true
+        },
+        "Hotel_Name": {
+            "description": "酒店名称",
+            "type": "string",
+            "maxLength": 100,
+            "example": "beijingshunyixierdunhuitingjiudian",
+            "required": true
+        },
+        "Brand_Code": {
+            "description": "品牌代码，2位字符标识",
+            "type": "string",
+            "maxLength": 2,
+            "example": "HT",
+            "required": true
+        },
+        "Business_Date": {
+            "description": "营业日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/14/25",
+            "required": true
+        },
+        "Hms_Version": {
+            "description": "HMS系统版本号",
+            "type": "string",
+            "maxLength": 20,
+            "example": "XPMS_1.0.1",
+            "required": true
+        },
+        "Currency_Code": {
+            "description": "货币代码，ISO 4217标准3位代码",
+            "type": "string",
+            "format": "^[A-Z]{3}$",
+            "maxLength": 3,
+            "example": "CNY",
+            "required": true
+        },
+        "Hilstar_Ind": {
+            "description": "是否参与Hilstar计划指标",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 1,
+            "required": true
+        },
+        "Encription_on": {
+            "description": "是否启用加密指标",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        },
+        "Default_Print_Language": {
+            "description": "默认打印语言ID",
+            "type": "integer",
+            "example": 1,
+            "required": true
+        },
+        "Default_PBX_Language": {
+            "description": "默认PBX语言ID",
+            "type": "integer",
+            "example": 1,
+            "required": true
+        },
+        "Hotel_Address_line_1": {
+            "description": "酒店地址第一行",
+            "type": "string",
+            "maxLength": 100,
+            "required": false
+        },
+        "Hotel_City": {
+            "description": "酒店所在城市",
+            "type": "string",
+            "maxLength": 50,
+            "example": "Beijing",
+            "required": true
+        },
+        "Hotel_Country": {
+            "description": "酒店所在国家，ISO 3166-1 alpha-2代码",
+            "type": "string",
+            "format": "^[A-Z]{2}$",
+            "maxLength": 2,
+            "example": "CN",
+            "required": true
+        },
+        "Hotel_Postal_Code": {
+            "description": "酒店邮政编码",
+            "type": "string",
+            "maxLength": 20,
+            "required": false
+        },
+        "Hotel_Phone_Number": {
+            "description": "酒店电话号码",
+            "type": "string",
+            "maxLength": 30,
+            "required": false
+        },
+        "stay_id": {
+            "description": "住宿记录唯一标识",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 20,
+            "example": "148291001",
+            "required": true
+        },
+        "room_id": {
+            "description": "房间号",
+            "type": "string",
+            "maxLength": 10,
+            "example": "5608",
+            "required": true
+        },
+        "room_type": {
+            "description": "房间类型代码",
+            "type": "string",
+            "maxLength": 10,
+            "example": "SKJS",
+            "required": true
+        },
+        "stay_status": {
+            "description": "住宿状态",
+            "type": "string",
+            "maxLength": 1,
+            "validValues": "O=已退房, I=在住",
+            "example": "O",
+            "required": true
+        },
+        "reservation_date": {
+            "description": "预订日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/13/25",
+            "required": true
+        },
+        "arrival_date": {
+            "description": "入住日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/13/25",
+            "required": true
+        },
+        "departure_date": {
+            "description": "离店日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/14/25",
+            "required": true
+        },
+        "original_departure_date": {
+            "description": "原始预定离店日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/14/25",
+            "required": true
+        },
+        "number_of_adults": {
+            "description": "成人数量",
+            "type": "integer",
+            "minimum": 0,
+            "example": 1,
+            "required": true
+        },
+        "number_of_children": {
+            "description": "儿童数量",
+            "type": "integer",
+            "minimum": 0,
+            "example": 0,
+            "required": true
+        },
+        "rate_plan_id": {
+            "description": "价格计划ID",
+            "type": "string",
+            "maxLength": 10,
+            "example": "H1P",
+            "required": true
+        },
+        "rate_plan_type": {
+            "description": "价格计划类型",
+            "type": "string",
+            "maxLength": 1,
+            "enum": ["L", "C", "D", "S", "V"],
+            "enumDescriptions": {
+                "L": "Local (本地)",
+                "C": "Convention (会议)",
+                "D": "Dayuse (日用)",
+                "S": "System (系统)",
+                "V": "Rack (门市价)"
+            },
+            "example": "L",
+            "required": true
+        },
+        "rate_plan_desc": {
+            "description": "价格计划描述",
+            "type": "string",
+            "maxLength": 100,
+            "required": false
+        },
+        "room_rate": {
+            "description": "房价",
+            "type": "decimal",
+            "format": "最多2位小数",
+            "example": 469.42,
+            "required": true
+        },
+        "checkout_type": {
+            "description": "退房类型",
+            "type": "string",
+            "maxLength": 1,
+            "enum": ["I", "P", "R", "V", "G", "K"],
+            "enumDescriptions": {
+                "I": "In Person (亲自退房)",
+                "P": "Phone ZipOuts (电话快速退房)",
+                "R": "Room Found Vacant (发现房间空置)",
+                "V": "Video Checkouts (视频退房)",
+                "G": "Group Checkouts (团队退房)",
+                "K": "Kiosk Checkouts (自助机退房)"
+            },
+            "example": "I",
+            "required": true
+        },
+        "checkin_source_code": {
+            "description": "入住来源代码",
+            "type": "string",
+            "maxLength": 2,
+            "enum": ["E", "F", "EF", "K", "EK", "P", "EP"],
+            "enumDescriptions": {
+                "E": "ECHECKIN (电子入住)",
+                "F": "FRONT DESK (前台)",
+                "EF": "ECHECKIN BY FRONT DESK (前台电子入住)",
+                "K": "KIOSK (自助机)",
+                "EK": "ECHECKIN BY KIOSK (自助机电子入住)",
+                "P": "PERSONAL ASSISTANT (私人助理)",
+                "EP": "ECHECKIN BY PERSONAL ASSISTANT (私人助理电子入住)"
+            },
+            "example": "F",
+            "required": true
+        },
+        "stay_reason": {
+            "description": "住宿原因",
+            "type": "string",
+            "maxLength": 1,
+            "enum": ["C", "H", "O", "P", "R"],
+            "enumDescriptions": {
+                "C": "GUEST COMP (免费客人)",
+                "H": "HOUSE USE (内部使用)",
+                "O": "OWNER COMP (业主免费)",
+                "P": "PERMANENT RESIDENT (常住客人)",
+                "R": "GUEST RENTAL (付费客人)"
+            },
+            "example": "R",
+            "required": true
+        },
+        "source_of_bus_code": {
+            "description": "业务来源代码",
+            "type": "integer",
+            "enum": [0, 1, 2, 4, 8, 16],
+            "enumDescriptions": {
+                "0": "Central Reservations Office (中央预订中心)",
+                "1": "Hotel To Hotel (酒店间)",
+                "2": "Own Hotel (本酒店)",
+                "4": "Airline/Internet (航空/互联网)",
+                "8": "Walkin (上门客人)",
+                "16": "CRO/Travel Agent (中央预订/旅行社)"
+            },
+            "example": 0,
+            "required": true
+        },
+        "travel_reason_code": {
+            "description": "出行原因代码",
+            "type": "string",
+            "maxLength": 1,
+            "enum": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "L", "N", "O", "R", "V", "W", "Z"],
+            "enumDescriptions": {
+                "A": "CONVENTION/ASSOCIATION (会议/协会)",
+                "B": "RACK (门市价)",
+                "C": "CONSORTIA (联盟)",
+                "D": "SMERF (社会/军事/教育/宗教/兄弟会)",
+                "E": "CORPORATE MARKETING PROGRAMS (企业营销计划)",
+                "F": "PERMANENT (常住)",
+                "G": "GOVERNMENT (政府)",
+                "H": "HOUSE USE (内部使用)",
+                "I": "INDIVIDUAL TOUR/WHOLESALE (个人游/批发)",
+                "L": "OTHER DISCOUNTS (其他折扣)",
+                "N": "TRAVEL INDUSTRY DISCOUNT (旅游业折扣)",
+                "O": "GROUP TOUR (团队游)",
+                "R": "COMPANY MEETINGS/INCENTIVES (公司会议/奖励)",
+                "V": "CORPORATE NEGOTIATED (企业协议价)",
+                "W": "LOCAL NEGOTIATED (本地协议价)",
+                "Z": "COMP ROOM (免费房)"
+            },
+            "example": "E",
+            "required": true
+        },
+        "walkin_status": {
+            "description": "是否为上门客人",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "comp_status": {
+            "description": "是否为免费住宿",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        },
+        "meta_status": {
+            "description": "Meta状态",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "one_bedroom_suite_status": {
+            "description": "是否为一居室套房",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "sell_thru_status": {
+            "description": "Sell-thru状态",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "hide_rates": {
+            "description": "是否隐藏价格",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        },
+        "honors_points_eligibility": {
+            "description": "是否有资格获得荣誉积分",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 1,
+            "required": true
+        },
+        "crs_commission_paid_cntrl_ind": {
+            "description": "CRS佣金支付控制指标",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        },
+        "crs_chained_ind": {
+            "description": "CRS链接指标",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        },
+        "comm_pay_change": {
+            "description": "佣金支付变更指标",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "crs_property_id": {
+            "description": "CRS物业ID",
+            "type": "string",
+            "maxLength": 10,
+            "example": "PEKSH",
+            "required": true
+        },
+        "booked_by": {
+            "description": "预订来源物业",
+            "type": "string",
+            "maxLength": 10,
+            "example": "PEKSH",
+            "required": true
+        },
+        "crs_commission_amount": {
+            "description": "CRS佣金金额",
+            "type": "decimal",
+            "format": "最多2位小数",
+            "required": false
+        },
+        "crs_commission_paid_to": {
+            "description": "CRS佣金支付对象",
+            "type": "string",
+            "maxLength": 1,
+            "required": false
+        },
+        "crs_commission_type": {
+            "description": "CRS佣金类型",
+            "type": "string",
+            "maxLength": 1,
+            "required": false
+        },
+        "primary_airline": {
+            "description": "主要航空公司代码",
+            "type": "string",
+            "maxLength": 2,
+            "example": "AA",
+            "required": false,
+            "crossFieldRule": "如果存在且非空，secondary_airline也必须存在且非空"
+        },
+        "secondary_airline": {
+            "description": "次要航空公司代码",
+            "type": "string",
+            "maxLength": 2,
+            "example": "UA",
+            "required": false,
+            "crossFieldRule": "如果存在且非空，primary_airline也必须存在且非空"
+        },
+        "guest_id": {
+            "description": "客人唯一标识",
+            "type": "string",
+            "maxLength": 20,
+            "example": "000016907",
+            "required": true
+        },
+        "guest_status": {
+            "description": "客人状态",
+            "type": "string",
+            "maxLength": 1,
+            "validValues": "O=已退房, I=在住",
+            "example": "O",
+            "required": true
+        },
+        "guest_lastname": {
+            "description": "客人姓氏",
+            "type": "string",
+            "maxLength": 50,
+            "example": "Hilton1",
+            "required": true
+        },
+        "guest_firstname": {
+            "description": "客人名字",
+            "type": "string",
+            "maxLength": 50,
+            "example": "RAJANI",
+            "required": true
+        },
+        "guest_arrival_date": {
+            "description": "客人入住日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/13/25",
+            "required": true,
+            "crossFieldRule": "必须与父级STAY的arrival_date匹配"
+        },
+        "guest_departure_date": {
+            "description": "客人离店日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/14/25",
+            "required": true,
+            "crossFieldRule": "必须与父级STAY的departure_date匹配"
+        },
+        "guarantor_ind": {
+            "description": "是否为担保人",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 1,
+            "required": true
+        },
+        "guarantee_type": {
+            "description": "担保类型（PCRS代码）",
+            "type": "string",
+            "maxLength": 2,
+            "enum": ["10", "12", "2P", "4P", "6P", "C1", "CC", "CD", "CO", "CP", "CR", "DB", "DP", "FP", "GA", "GC", "GD", "IA", "IN", "ND", "NN", "PD", "PM", "PR", "PT", "QC", "QW", "TA", "VC", "VG", "WV", "ZD", "ZG"],
+            "enumDescriptions": {
+                "10": "10PM Hold/No Guarantee (10点前保留/无担保)",
+                "12": "Cancel before 12PM (12点前取消)",
+                "2P": "2PM Hold/No Guarantee (下午2点保留)",
+                "4P": "4PM Courtesy Hold (下午4点礼貌保留)",
+                "6P": "Hold Until 6PM (保留至下午6点)",
+                "C1": "Profile Credit Card (信用卡档案)",
+                "CC": "Guarantee by Credit Card (信用卡担保)",
+                "CD": "Guarantee by CC Deposit (信用卡押金担保)",
+                "CO": "Corporate Profile (公司档案)",
+                "CP": "Credit Card - Early Arrival (信用卡-提前到达)",
+                "CR": "Guarantee by Corporate Account (公司账户担保)",
+                "DB": "Direct Bill (直接记账)",
+                "DP": "Deposit and Pre-Reg (押金和预登记)",
+                "FP": "Full Payment No Refund (全额付款不退款)",
+                "GA": "Guaranteed to Guest Address (担保至客人地址)",
+                "GC": "Guaranteed by Corporate Account (公司账户担保)",
+                "GD": "GDS Deposit (GDS押金)",
+                "IA": "Guaranteed by Travel Agent (旅行社担保)",
+                "IN": "Guarantee to Property (酒店担保)",
+                "ND": "Guaranteed by Need Deposit (需要押金担保)",
+                "NN": "Cancel before 12PM (12点前取消)",
+                "PD": "Guaranteed by Paid Deposit (已付押金担保)",
+                "PM": "Hold Until 6PM (保留至下午6点)",
+                "PR": "Pre-Register (预登记)",
+                "PT": "Paytell Utell Int'l (Paytell国际)",
+                "QC": "Quick-Check Waive (快速入住免担保)",
+                "QW": "Quick-Check Waive (快速入住免担保)",
+                "TA": "Guaranteed by Travel Agent (旅行社担保)",
+                "VC": "Guaranteed by Voucher (凭证担保)",
+                "VG": "Verbal Guarantee (口头担保)",
+                "WV": "Waive Guarantee Deposit (免除担保押金)",
+                "ZD": "Zip In Check In Deposit (快速入住押金)",
+                "ZG": "Zip In Check In Guarantee (快速入住担保)"
+            },
+            "example": "6P",
+            "required": true
+        },
+        "travel_agent_guarantee_ind": {
+            "description": "旅行社担保指标",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true,
+            "crossFieldRule": "如果为1，guarantee_type应为TA或IA"
+        },
+        "corporate_guarantee_ind": {
+            "description": "公司担保指标",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true,
+            "crossFieldRule": "如果为1，guarantee_type应为CR、GC或CO"
+        },
+        "honors_num": {
+            "description": "荣誉会员号码",
+            "type": "string",
+            "maxLength": 20,
+            "example": "003134273",
+            "required": false,
+            "crossFieldRule": "如果存在且非空，honors_tier_type也应存在"
+        },
+        "honors_tier_type": {
+            "description": "荣誉会员等级",
+            "type": "string",
+            "maxLength": 1,
+            "enum": ["M", "S", "G", "D"],
+            "enumDescriptions": {
+                "M": "Member (会员)",
+                "S": "Silver (银卡)",
+                "G": "Gold (金卡)",
+                "D": "Diamond (钻石卡)"
+            },
+            "example": "G",
+            "required": false
+        },
+        "print_language_id": {
+            "description": "打印语言ID",
+            "type": "integer",
+            "example": 1,
+            "required": true
+        },
+        "language_id": {
+            "description": "语言ID",
+            "type": "integer",
+            "example": 1,
+            "required": true
+        },
+        "guest_currency_code": {
+            "description": "客人货币代码，ISO 4217标准",
+            "type": "string",
+            "format": "^[A-Z]{3}$",
+            "maxLength": 3,
+            "example": "CNY",
+            "required": true,
+            "crossFieldRule": "应与System21/Currency_Code一致"
+        },
+        "travel_agent_id": {
+            "description": "旅行社ID",
+            "type": "string",
+            "maxLength": 20,
+            "example": "TA12345",
+            "required": false,
+            "crossFieldRule": "当STAY的primary_airline和secondary_airline都存在且非空时必填"
+        },
+        "address_type": {
+            "description": "地址类型",
+            "type": "string",
+            "maxLength": 1,
+            "validValues": "H=Home (家庭), B=Business (商务)",
+            "example": "H",
+            "required": true,
+            "note": "如果ADDRESS元素存在则必填"
+        },
+        "email_address": {
+            "description": "电子邮件地址",
+            "type": "string",
+            "format": "应包含@和.",
+            "maxLength": 100,
+            "example": "nick.jiang@hilton.com",
+            "required": false
+        },
+        "phone_num": {
+            "description": "电话号码",
+            "type": "string",
+            "format": "仅包含数字、空格、连字符、括号或加号",
+            "maxLength": 30,
+            "example": "15152887708",
+            "required": false
+        },
+        "folio_id": {
+            "description": "账单唯一标识",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 20,
+            "example": "1482914001",
+            "required": true
+        },
+        "tax_exempt_ind": {
+            "description": "免税指标",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "receipt_id": {
+            "description": "收据唯一标识",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 20,
+            "example": "1482914001",
+            "required": true
+        },
+        "fb_mop_type": {
+            "description": "账单支付方式类型",
+            "type": "string",
+            "maxLength": 2,
+            "validValues": "CS=Cash (现金), CC=Credit Card (信用卡), CH=Check (支票), DB=Direct Bill (直接记账), AR=A/R Transfer (应收账款转账)",
+            "example": "CS",
+            "required": true
+        },
+        "confidential_ind": {
+            "description": "保密指标",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "accounting_id": {
+            "description": "会计科目ID",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 10,
+            "example": "1000",
+            "required": true
+        },
+        "accounting_id_desc": {
+            "description": "会计科目描述",
+            "type": "string",
+            "maxLength": 100,
+            "example": "fangfei",
+            "required": true
+        },
+        "trans_id": {
+            "description": "交易唯一标识",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 20,
+            "example": "148297854",
+            "required": true
+        },
+        "trans_desc": {
+            "description": "交易描述",
+            "type": "string",
+            "maxLength": 100,
+            "example": "fangfei",
+            "required": true
+        },
+        "entry_id": {
+            "description": "分录唯一标识",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 20,
+            "example": "148297854",
+            "required": true
+        },
+        "employee_id": {
+            "description": "操作员工ID",
+            "type": "string",
+            "maxLength": 20,
+            "example": "HT3480008",
+            "required": true
+        },
+        "charge_category": {
+            "description": "费用类别",
+            "type": "string",
+            "maxLength": 1,
+            "enum": ["B", "F", "K", "M", "P", "R", "S", "T"],
+            "enumDescriptions": {
+                "B": "Beverage (饮料)",
+                "F": "Food (餐饮)",
+                "K": "Package (套餐)",
+                "M": "Miscellaneous (杂项)",
+                "P": "Phone (电话)",
+                "R": "Room (房间)",
+                "S": "Shops (商店)",
+                "T": "Taxes (税费)"
+            },
+            "example": "R",
+            "required": true
+        },
+        "accounting_category": {
+            "description": "会计类别",
+            "type": "string",
+            "maxLength": 2,
+            "enum": ["AB", "AH", "AM", "AP", "AR", "AS", "AT", "BC", "BD", "CA", "CC", "CD", "CG", "CH", "CM", "CS", "CX", "DA", "DB", "DP", "DY", "E", "FC", "FN", "GD", "GP", "GR", "GT", "HP", "I", "K", "MC", "MS", "NC", "OE", "OJ", "OK", "OQ", "OS", "OZ", "PA", "PB", "PF", "PH", "PI", "PK", "PM", "PP", "PR", "PS", "Q", "RA", "RM", "RS", "RX", "SG", "SN", "T1", "TD", "TO", "TQ", "TX", "U", "VO", "WO", "X"],
+            "enumDescriptions": {
+                "AB": "Banquet Allowances (宴会津贴)",
+                "AH": "Hotel Paidout Allowances (酒店付款津贴)",
+                "AM": "Miscellaneous Allowances (杂项津贴)",
+                "AP": "Phone Allowances (电话津贴)",
+                "AR": "A/R Transfer (应收账款转账)",
+                "AS": "Room/Suite Allowances (房间/套房津贴)",
+                "AT": "Tax Allowances (税收津贴)",
+                "BC": "Banquet Charges (宴会费用)",
+                "BD": "Bad Debt (坏账)",
+                "CA": "Credit Card Allowances (信用卡津贴)",
+                "CC": "Credit Card Payments (信用卡支付)",
+                "CD": "Credit Card Discounts (信用卡折扣)",
+                "CG": "Charge Allowances (费用津贴)",
+                "CH": "Check Payments (支票支付)",
+                "CM": "Club Membership (俱乐部会员)",
+                "CS": "Cash Payments (现金支付)",
+                "CX": "Cancellation Charges (取消费用)",
+                "DA": "Depository Allowances (存款津贴)",
+                "DB": "Direct Bill Payments (直接记账支付)",
+                "DP": "Bank Deposit (银行存款)",
+                "DY": "Depository Payments (存款支付)",
+                "E": "Food Charge Tips (餐饮小费)",
+                "FC": "Foreign Cash Payments (外币现金支付)",
+                "FN": "Finance Charges (财务费用)",
+                "GD": "GTD No Show Charges (担保未到费用)",
+                "GP": "Guest Paidouts (客人付款)",
+                "GR": "Gratuity Charges (服务费)",
+                "GT": "General Taxes (一般税收)",
+                "HP": "Hotel Paidouts (酒店付款)",
+                "I": "Beverage Charge Tips (饮料小费)",
+                "K": "Food Covers (餐饮人次)",
+                "MC": "Minimum Assessment Charges (最低评估费用)",
+                "MS": "Miscellaneous Charges (杂项费用)",
+                "NC": "Depository Payments (存款支付)",
+                "OE": "Other Outlet Charge Tips (其他出口小费)",
+                "OJ": "Other Outlet Paidouts (其他出口付款)",
+                "OK": "Other Outlet Covers (其他出口人次)",
+                "OQ": "Other Outlet Charges (其他出口费用)",
+                "OS": "Over/Short (超额/短缺)",
+                "OZ": "Other Outlet Allowances (其他出口津贴)",
+                "PA": "Hotel Paid-Out (Admin and General) (酒店付款-行政与一般)",
+                "PB": "Hotel Paid-Out (Bar) (酒店付款-酒吧)",
+                "PF": "Hotel Paid-Out (Front Desk) (酒店付款-前台)",
+                "PH": "Phone Charges (电话费用)",
+                "PI": "Hotel Paid-Out (Miscellaneous) (酒店付款-杂项)",
+                "PK": "Package (套餐)",
+                "PM": "Hotel Paid-Out (Maintenance) (酒店付款-维护)",
+                "PP": "Hotel Paid-Out (Housekeeping) (酒店付款-客房服务)",
+                "PR": "Hotel Paid-Out (Restaurant) (酒店付款-餐厅)",
+                "PS": "Hotel Paid-Out (Sales) (酒店付款-销售)",
+                "Q": "Food Charge (餐饮费用)",
+                "RA": "Room/Suite Allowances (房间/套房津贴)",
+                "RM": "Room/Suite Charges (房间/套房费用)",
+                "RS": "Room/Suite Services Charges (房间/套房服务费用)",
+                "RX": "Room/Suite Taxes (房间/套房税费)",
+                "SG": "100% Satisfaction Allowances (100%满意津贴)",
+                "SN": "Service Recovery - Non Revenue (服务恢复-非收入)",
+                "T1": "Tax (税费)",
+                "TD": "Travel Agent Deduction Allowance (旅行社扣款津贴)",
+                "TO": "Other Outlet Tax (其他出口税)",
+                "TQ": "Food Outlet Tax (餐饮出口税)",
+                "TX": "Beverage Outlet Tax (饮料出口税)",
+                "U": "Beverage Covers (饮料人次)",
+                "VO": "Voucher Payments (凭证支付)",
+                "WO": "Write Off Allowances (核销津贴)",
+                "X": "Beverage Charge (饮料费用)"
+            },
+            "example": "RM",
+            "required": true,
+            "crossFieldRule": "必须与accounting_type形成有效组合"
+        },
+        "accounting_type": {
+            "description": "会计类型",
+            "type": "string",
+            "maxLength": 1,
+            "enum": ["I", "A", "E", "L"],
+            "enumDescriptions": {
+                "I": "Income (收入)",
+                "A": "Asset/Payment (资产/支付)",
+                "E": "Expense (费用)",
+                "L": "Liability/Tax (负债/税收)"
+            },
+            "example": "I",
+            "required": true,
+            "crossFieldRule": "必须与accounting_category形成有效组合"
+        },
+        "ledger_entry_amount": {
+            "description": "分类账分录金额",
+            "type": "decimal",
+            "format": "最多2位小数",
+            "example": 469.42,
+            "required": true,
+            "crossFieldRule": "CHARGE类型通常为正数"
+        },
+        "posting_type": {
+            "description": "过账类型",
+            "type": "string",
+            "maxLength": 1,
+            "validValues": "P=Primary (主要), S=Secondary/System (次要/系统)",
+            "example": "P",
+            "required": true
+        },
+        "entry_type": {
+            "description": "分录类型",
+            "type": "string",
+            "maxLength": 6,
+            "enum": ["APYMGR", "ADJUST", "PAYMNT", "APYTRN", "GSTSNR", "PAYOUT", "REFNOR", "ALLOWE", "GSTSAT", "CHARGE"],
+            "enumDescriptions": {
+                "APYMGR": "Manager Adjustment (经理调整)",
+                "ADJUST": "Adjustment (调整)",
+                "PAYMNT": "Payment (支付)",
+                "APYTRN": "Payment Adjustment (支付调整)",
+                "GSTSNR": "Non-revenue Service Recovery (非收入服务恢复)",
+                "PAYOUT": "Guest/Hotel Payout (客人/酒店付款)",
+                "REFNOR": "Refund Normal (正常退款)",
+                "ALLOWE": "Allowance (津贴)",
+                "GSTSAT": "Guest Satisfaction Allowance (客人满意津贴)",
+                "CHARGE": "Charge (费用)"
+            },
+            "example": "CHARGE",
+            "required": true
+        },
+        "entry_datetime": {
+            "description": "分录日期时间",
+            "type": "datetime",
+            "format": "MM/DD/YY HH:MM:SS",
+            "example": "10/14/25 04:28:54",
+            "required": true
+        },
+        "bus_date": {
+            "description": "交易营业日期",
+            "type": "date",
+            "format": "MM/DD/YY",
+            "example": "10/14/25",
+            "required": true,
+            "crossFieldRule": "应小于或等于System21/Business_Date"
+        },
+        "trans_folio_id": {
+            "description": "交易所属账单ID",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 20,
+            "example": "1482914001",
+            "required": true,
+            "crossFieldRule": "必须与父级FOLIO的folio_id匹配"
+        },
+        "original_folio_id": {
+            "description": "原始账单ID",
+            "type": "string",
+            "format": "^[0-9]+$",
+            "maxLength": 20,
+            "example": "1482914001",
+            "required": true,
+            "crossFieldRule": "如果与trans_folio_id不同，transfer_ind应为1"
+        },
+        "trans_account_type": {
+            "description": "交易账户类型",
+            "type": "string",
+            "maxLength": 1,
+            "example": "R",
+            "required": true
+        },
+        "common_acct_identifier": {
+            "description": "通用账户标识符",
+            "type": "string",
+            "maxLength": 50,
+            "required": false
+        },
+        "charge_routed": {
+            "description": "费用是否已路由",
+            "type": "string",
+            "enum": ["Y", "N"],
+            "example": "N",
+            "required": true
+        },
+        "transfer_ind": {
+            "description": "是否为转账交易",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        },
+        "leased_ind": {
+            "description": "是否为租赁相关",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        },
+        "hhonors_receipt_ind": {
+            "description": "荣誉会员收据指标",
+            "type": "integer",
+            "enum": [0, 1],
+            "example": 0,
+            "required": true
+        }
+    },
+    "paths": {
+        "System21.Hotel_Code": {
+            "$ref": "#/definitions/Hotel_Code"
+        },
+        "System21.Hotel_Name": {
+            "$ref": "#/definitions/Hotel_Name"
+        },
+        "System21.Brand_Code": {
+            "$ref": "#/definitions/Brand_Code"
+        },
+        "System21.Business_Date": {
+            "$ref": "#/definitions/Business_Date"
+        },
+        "System21.Hms_Version": {
+            "$ref": "#/definitions/Hms_Version"
+        },
+        "System21.Currency_Code": {
+            "$ref": "#/definitions/Currency_Code"
+        },
+        "System21.Hilstar_Ind": {
+            "$ref": "#/definitions/Hilstar_Ind"
+        },
+        "System21.Encription_on": {
+            "$ref": "#/definitions/Encription_on"
+        },
+        "System21.Default_Print_Language": {
+            "$ref": "#/definitions/Default_Print_Language"
+        },
+        "System21.Default_PBX_Language": {
+            "$ref": "#/definitions/Default_PBX_Language"
+        },
+        "System21.Hotel_Address_line_1": {
+            "$ref": "#/definitions/Hotel_Address_line_1"
+        },
+        "System21.Hotel_City": {
+            "$ref": "#/definitions/Hotel_City"
+        },
+        "System21.Hotel_Country": {
+            "$ref": "#/definitions/Hotel_Country"
+        },
+        "System21.Hotel_Postal_Code": {
+            "$ref": "#/definitions/Hotel_Postal_Code"
+        },
+        "System21.Hotel_Phone_Number": {
+            "$ref": "#/definitions/Hotel_Phone_Number"
+        },
+        "STAY.stay_id": {
+            "$ref": "#/definitions/stay_id"
+        },
+        "STAY.room_id": {
+            "$ref": "#/definitions/room_id"
+        },
+        "STAY.room_type": {
+            "$ref": "#/definitions/room_type"
+        },
+        "STAY.stay_status": {
+            "$ref": "#/definitions/stay_status"
+        },
+        "STAY.reservation_date": {
+            "$ref": "#/definitions/reservation_date"
+        },
+        "STAY.arrival_date": {
+            "$ref": "#/definitions/arrival_date"
+        },
+        "STAY.departure_date": {
+            "$ref": "#/definitions/departure_date"
+        },
+        "STAY.original_departure_date": {
+            "$ref": "#/definitions/original_departure_date"
+        },
+        "STAY.number_of_adults": {
+            "$ref": "#/definitions/number_of_adults"
+        },
+        "STAY.number_of_children": {
+            "$ref": "#/definitions/number_of_children"
+        },
+        "STAY.rate_plan_id": {
+            "$ref": "#/definitions/rate_plan_id"
+        },
+        "STAY.rate_plan_type": {
+            "$ref": "#/definitions/rate_plan_type"
+        },
+        "STAY.rate_plan_desc": {
+            "$ref": "#/definitions/rate_plan_desc"
+        },
+        "STAY.room_rate": {
+            "$ref": "#/definitions/room_rate"
+        },
+        "STAY.checkout_type": {
+            "$ref": "#/definitions/checkout_type"
+        },
+        "STAY.checkin_source_code": {
+            "$ref": "#/definitions/checkin_source_code"
+        },
+        "STAY.stay_reason": {
+            "$ref": "#/definitions/stay_reason"
+        },
+        "STAY.source_of_bus_code": {
+            "$ref": "#/definitions/source_of_bus_code"
+        },
+        "STAY.travel_reason_code": {
+            "$ref": "#/definitions/travel_reason_code"
+        },
+        "STAY.walkin_status": {
+            "$ref": "#/definitions/walkin_status"
+        },
+        "STAY.comp_status": {
+            "$ref": "#/definitions/comp_status"
+        },
+        "STAY.meta_status": {
+            "$ref": "#/definitions/meta_status"
+        },
+        "STAY.one_bedroom_suite_status": {
+            "$ref": "#/definitions/one_bedroom_suite_status"
+        },
+        "STAY.sell_thru_status": {
+            "$ref": "#/definitions/sell_thru_status"
+        },
+        "STAY.hide_rates": {
+            "$ref": "#/definitions/hide_rates"
+        },
+        "STAY.honors_points_eligibility": {
+            "$ref": "#/definitions/honors_points_eligibility"
+        },
+        "STAY.crs_commission_paid_cntrl_ind": {
+            "$ref": "#/definitions/crs_commission_paid_cntrl_ind"
+        },
+        "STAY.crs_chained_ind": {
+            "$ref": "#/definitions/crs_chained_ind"
+        },
+        "STAY.comm_pay_change": {
+            "$ref": "#/definitions/comm_pay_change"
+        },
+        "STAY.crs_property_id": {
+            "$ref": "#/definitions/crs_property_id"
+        },
+        "STAY.booked_by": {
+            "$ref": "#/definitions/booked_by"
+        },
+        "STAY.crs_commission_amount": {
+            "$ref": "#/definitions/crs_commission_amount"
+        },
+        "STAY.crs_commission_paid_to": {
+            "$ref": "#/definitions/crs_commission_paid_to"
+        },
+        "STAY.crs_commission_type": {
+            "$ref": "#/definitions/crs_commission_type"
+        },
+        "STAY.primary_airline": {
+            "$ref": "#/definitions/primary_airline"
+        },
+        "STAY.secondary_airline": {
+            "$ref": "#/definitions/secondary_airline"
+        },
+        "GUEST.guest_id": {
+            "$ref": "#/definitions/guest_id"
+        },
+        "GUEST.guest_status": {
+            "$ref": "#/definitions/guest_status"
+        },
+        "GUEST.guest_lastname": {
+            "$ref": "#/definitions/guest_lastname"
+        },
+        "GUEST.guest_firstname": {
+            "$ref": "#/definitions/guest_firstname"
+        },
+        "GUEST.guest_arrival_date": {
+            "$ref": "#/definitions/guest_arrival_date"
+        },
+        "GUEST.guest_departure_date": {
+            "$ref": "#/definitions/guest_departure_date"
+        },
+        "GUEST.guarantor_ind": {
+            "$ref": "#/definitions/guarantor_ind"
+        },
+        "GUEST.guarantee_type": {
+            "$ref": "#/definitions/guarantee_type"
+        },
+        "GUEST.travel_agent_guarantee_ind": {
+            "$ref": "#/definitions/travel_agent_guarantee_ind"
+        },
+        "GUEST.corporate_guarantee_ind": {
+            "$ref": "#/definitions/corporate_guarantee_ind"
+        },
+        "GUEST.honors_num": {
+            "$ref": "#/definitions/honors_num"
+        },
+        "GUEST.honors_tier_type": {
+            "$ref": "#/definitions/honors_tier_type"
+        },
+        "GUEST.print_language_id": {
+            "$ref": "#/definitions/print_language_id"
+        },
+        "GUEST.language_id": {
+            "$ref": "#/definitions/language_id"
+        },
+        "GUEST.currency_code": {
+            "$ref": "#/definitions/guest_currency_code"
+        },
+        "GUEST.travel_agent_id": {
+            "$ref": "#/definitions/travel_agent_id"
+        },
+        "ADDRESS.address_type": {
+            "$ref": "#/definitions/address_type"
+        },
+        "ADDRESS.email_address": {
+            "$ref": "#/definitions/email_address"
+        },
+        "ADDRESS.phone_num": {
+            "$ref": "#/definitions/phone_num"
+        },
+        "FOLIO.folio_id": {
+            "$ref": "#/definitions/folio_id"
+        },
+        "FOLIO.tax_exempt_ind": {
+            "$ref": "#/definitions/tax_exempt_ind"
+        },
+        "FOLIOBILL.receipt_id": {
+            "$ref": "#/definitions/receipt_id"
+        },
+        "FOLIOBILL.fb_mop_type": {
+            "$ref": "#/definitions/fb_mop_type"
+        },
+        "FOLIOBILL.confidential_ind": {
+            "$ref": "#/definitions/confidential_ind"
+        },
+        "TRANS.accounting_id": {
+            "$ref": "#/definitions/accounting_id"
+        },
+        "TRANS.accounting_id_desc": {
+            "$ref": "#/definitions/accounting_id_desc"
+        },
+        "TRANS.trans_id": {
+            "$ref": "#/definitions/trans_id"
+        },
+        "TRANS.trans_desc": {
+            "$ref": "#/definitions/trans_desc"
+        },
+        "TRANS.entry_id": {
+            "$ref": "#/definitions/entry_id"
+        },
+        "TRANS.employee_id": {
+            "$ref": "#/definitions/employee_id"
+        },
+        "TRANS.charge_category": {
+            "$ref": "#/definitions/charge_category"
+        },
+        "TRANS.accounting_category": {
+            "$ref": "#/definitions/accounting_category"
+        },
+        "TRANS.accounting_type": {
+            "$ref": "#/definitions/accounting_type"
+        },
+        "TRANS.ledger_entry_amount": {
+            "$ref": "#/definitions/ledger_entry_amount"
+        },
+        "TRANS.posting_type": {
+            "$ref": "#/definitions/posting_type"
+        },
+        "TRANS.entry_type": {
+            "$ref": "#/definitions/entry_type"
+        },
+        "TRANS.entry_datetime": {
+            "$ref": "#/definitions/entry_datetime"
+        },
+        "TRANS.bus_date": {
+            "$ref": "#/definitions/bus_date"
+        },
+        "TRANS.trans_folio_id": {
+            "$ref": "#/definitions/trans_folio_id"
+        },
+        "TRANS.original_folio_id": {
+            "$ref": "#/definitions/original_folio_id"
+        },
+        "TRANS.trans_account_type": {
+            "$ref": "#/definitions/trans_account_type"
+        },
+        "TRANS.common_acct_identifier": {
+            "$ref": "#/definitions/common_acct_identifier"
+        },
+        "TRANS.charge_routed": {
+            "$ref": "#/definitions/charge_routed"
+        },
+        "TRANS.transfer_ind": {
+            "$ref": "#/definitions/transfer_ind"
+        },
+        "TRANS.leased_ind": {
+            "$ref": "#/definitions/leased_ind"
+        },
+        "TRANS.hhonors_receipt_ind": {
+            "$ref": "#/definitions/hhonors_receipt_ind"
+        },
+        "**.Hotel_Code": {
+            "$ref": "#/definitions/Hotel_Code"
+        },
+        "**.Business_Date": {
+            "$ref": "#/definitions/Business_Date"
+        },
+        "**.Currency_Code": {
+            "$ref": "#/definitions/Currency_Code"
+        },
+        "**.currency_code": {
+            "$ref": "#/definitions/guest_currency_code"
+        },
+        "**.folio_id": {
+            "$ref": "#/definitions/folio_id"
+        },
+        "**.stay_id": {
+            "$ref": "#/definitions/stay_id"
+        },
+        "**.guest_id": {
+            "$ref": "#/definitions/guest_id"
+        },
+        "**.trans_id": {
+            "$ref": "#/definitions/trans_id"
+        }
+    },
+    "valueMappings": {
+        "accountingCategoryToType": {
+            "description": "会计类别到会计类型的有效组合映射表",
+            "mappings": {
+                "AB": "I",
+                "AH": "A",
+                "AM": "E",
+                "AP": "I",
+                "AR": "E",
+                "AS": "I",
+                "AT": "L",
+                "BC": "I",
+                "BD": "E",
+                "CA": "A",
+                "CC": "A",
+                "CD": "E",
+                "CG": "I",
+                "CH": "A",
+                "CM": "I",
+                "CS": "A",
+                "CX": "I",
+                "DA": "A",
+                "DB": "A",
+                "DP": "A",
+                "DY": "A",
+                "E": "I",
+                "FC": "A",
+                "FN": "I",
+                "GD": "I",
+                "GP": "A",
+                "GR": "I",
+                "GT": "L",
+                "HP": "A",
+                "I": "I",
+                "K": "I",
+                "MC": "I",
+                "MS": "I",
+                "NC": "A",
+                "OE": "I",
+                "OJ": "E",
+                "OK": "I",
+                "OQ": "I",
+                "OS": "E",
+                "OZ": "I",
+                "PA": "A",
+                "PB": "A",
+                "PF": "E",
+                "PH": "I",
+                "PI": "E",
+                "PK": "I",
+                "PM": "E",
+                "PP": "E",
+                "PR": "E",
+                "PS": "E",
+                "Q": "I",
+                "RA": "I",
+                "RM": "I",
+                "RS": "I",
+                "RX": "L",
+                "SG": "I",
+                "SN": "L",
+                "T1": "L",
+                "TD": "E",
+                "TO": "L",
+                "TQ": "L",
+                "TX": "L",
+                "U": "I",
+                "VO": "A",
+                "WO": "I",
+                "X": "I"
+            }
+        },
+        "chargeCategoryAlignment": {
+            "description": "费用类别与会计类别的预期对齐关系",
+            "mappings": {
+                "R": ["RM", "RS", "RA", "RX"],
+                "T": ["RX", "GT", "TO", "TQ", "TX", "AT", "T1"],
+                "F": ["Q", "E", "TQ"],
+                "B": ["X", "I", "TX"],
+                "P": ["PH", "AP"],
+                "M": ["MS", "AM"]
+            }
+        }
+    },
+    "elementHierarchy": {
+        "description": "XML元素层级结构",
+        "structure": {
+            "System21": {
+                "cardinality": "1",
+                "children": ["Hotel_Code", "Hotel_Name", "Brand_Code", "Business_Date", "Hms_Version", "Currency_Code", "Hilstar_Ind", "Hotel_Address_line_1", "Hotel_City", "Hotel_Country", "Hotel_Postal_Code", "Hotel_Phone_Number", "Encription_on", "Default_Print_Language", "Default_PBX_Language", "STAY"]
+            },
+            "STAY": {
+                "parent": "System21",
+                "cardinality": "1..*",
+                "children": ["stay_id", "room_id", "room_type", "stay_status", "reservation_date", "arrival_date", "departure_date", "original_departure_date", "number_of_adults", "number_of_children", "rate_plan_id", "rate_plan_type", "rate_plan_desc", "room_rate", "checkout_type", "checkin_source_code", "stay_reason", "source_of_bus_code", "travel_reason_code", "walkin_status", "comp_status", "meta_status", "one_bedroom_suite_status", "sell_thru_status", "hide_rates", "honors_points_eligibility", "crs_commission_paid_cntrl_ind", "crs_chained_ind", "comm_pay_change", "crs_property_id", "booked_by", "crs_commission_amount", "crs_commission_paid_to", "crs_commission_type", "primary_airline", "secondary_airline", "GUEST"]
+            },
+            "GUEST": {
+                "parent": "STAY",
+                "cardinality": "1..*",
+                "children": ["guest_id", "guest_status", "guest_lastname", "guest_firstname", "guest_arrival_date", "guest_departure_date", "guarantor_ind", "guarantee_type", "travel_agent_guarantee_ind", "corporate_guarantee_ind", "honors_num", "honors_tier_type", "print_language_id", "language_id", "currency_code", "travel_agent_id", "ADDRESS", "FOLIO"]
+            },
+            "ADDRESS": {
+                "parent": "GUEST",
+                "cardinality": "0..*",
+                "children": ["address_type", "email_address", "phone_num"]
+            },
+            "FOLIO": {
+                "parent": "GUEST",
+                "cardinality": "0..*",
+                "children": ["folio_id", "tax_exempt_ind", "FOLIOBILL"]
+            },
+            "FOLIOBILL": {
+                "parent": "FOLIO",
+                "cardinality": "1..*",
+                "children": ["receipt_id", "fb_mop_type", "confidential_ind", "TRANS"]
+            },
+            "TRANS": {
+                "parent": "FOLIOBILL",
+                "cardinality": "0..*",
+                "children": ["accounting_id", "accounting_id_desc", "trans_id", "trans_desc", "entry_id", "employee_id", "charge_category", "accounting_category", "accounting_type", "ledger_entry_amount", "posting_type", "entry_type", "entry_datetime", "bus_date", "trans_folio_id", "original_folio_id", "trans_account_type", "common_acct_identifier", "charge_routed", "transfer_ind", "leased_ind", "hhonors_receipt_ind"]
+            }
+        }
+    }
+}
