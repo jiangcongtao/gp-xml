@@ -4661,8 +4661,8 @@
             }
         }
         
-        // 3. Format validation (regex) - only for string type, skip date and decimal (handled in validateType)
-        if (helpContent.format && helpContent.type !== 'date' && helpContent.type !== 'decimal') {
+        // 3. Format validation (regex) - only for string type, skip date, datetime and decimal (handled in validateType)
+        if (helpContent.format && helpContent.type !== 'date' && helpContent.type !== 'datetime' && helpContent.type !== 'decimal') {
             try {
                 const regex = new RegExp(helpContent.format);
                 if (!regex.test(trimmedValue)) {
@@ -4717,6 +4717,7 @@
                 return null;
                 
             case 'date':
+            case 'datetime':
                 return validateDateFormat(value, format);
                 
             case 'boolean':
@@ -4748,14 +4749,17 @@
         }
         
         // Convert format pattern to regex
+        // Use replaceAll for tokens that may appear multiple times (e.g., MM for month and minutes)
+        // Also support uppercase SS for seconds (some formats use HH:MM:SS)
         let pattern = format
             .replace('YYYY', '\\d{4}')
-            .replace('YY', '\\d{2}')
-            .replace('MM', '\\d{2}')
-            .replace('DD', '\\d{2}')
-            .replace('HH', '\\d{2}')
-            .replace('mm', '\\d{2}')
-            .replace('ss', '\\d{2}');
+            .replaceAll('YY', '\\d{2}')
+            .replaceAll('MM', '\\d{2}')
+            .replaceAll('DD', '\\d{2}')
+            .replaceAll('HH', '\\d{2}')
+            .replaceAll('mm', '\\d{2}')
+            .replaceAll('SS', '\\d{2}')
+            .replaceAll('ss', '\\d{2}');
         
         try {
             const regex = new RegExp('^' + pattern + '$');
