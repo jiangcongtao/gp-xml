@@ -59,4 +59,17 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            *.dmg
+            *.app.tar.gz
+            *.msi
+            *.exe
+            *.AppImage
+            *.deb
+            *.rpm
 
