@@ -64,9 +64,15 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.tauri_build.outputs.artifacts }}          # ← this is the key!
-          file_glob: true                                            # allow patterns
+          file_glob: true
           tag: v__VERSION__
           overwrite: true
-          body: ""   # we don't want to overwrite release notes here
-
+          file: |
+            **/*.AppImage
+            **/*.deb
+            **/*.rpm
+            **/*.msi
+            **/*.exe
+            **/*.zip
+            **/*.dmg
+            **/*.tar.gz 
