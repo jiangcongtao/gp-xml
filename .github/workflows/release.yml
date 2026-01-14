@@ -59,17 +59,14 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Upload all produced artifacts to the current release
+      - name: Upload artifacts to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          files: |
-            *.dmg
-            *.app.tar.gz
-            *.msi
-            *.exe
-            *.AppImage
-            *.deb
-            *.rpm
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.tauri_build.outputs.artifacts }}          # ← this is the key!
+          file_glob: true                                            # allow patterns
+          tag: v__VERSION__
+          overwrite: true
+          body: ""   # we don't want to overwrite release notes here
 
