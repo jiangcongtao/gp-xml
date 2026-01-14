@@ -1,6 +1,6 @@
 [package]
 name = "xml-navigator"
-version = "1.0.0"
+version = "1.1.0"
 description = "Modern XML Browser - A desktop application for browsing and editing XML files"
 authors = [""]
 edition = "2021"
