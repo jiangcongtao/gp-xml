@@ -23,7 +23,7 @@ echo ""
 # Step 2: Create DMG
 echo "💿 Step 2: Creating DMG..."
 
-DMG_NAME="XML Navigator_1.0.0_x64.dmg"
+DMG_NAME="XML Navigator_2.0.0_x64.dmg"
 DMG_PATH="src-tauri/target/release/bundle/dmg"
 APP_PATH="src-tauri/target/release/bundle/macos/XML Navigator.app"
 
